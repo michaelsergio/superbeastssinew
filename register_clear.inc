@@ -9,126 +9,126 @@
 
 ; PPU Registers
 
-lda #8Fh  ; Forced Blank - max brightness
-sta 2100h
+lda #$8F  ; Forced Blank - max brightness
+sta $2100
 
-stz 2101h
-stz 2102h
-stz 2103h
+stz $2101
+stz $2102
+stz $2103
 
 ; 2104h gets OAM Data
 ; refer to page A-3 and 2-26-2
 rc_oam_write
 
-stz 2105h
-stz 2106h
-stz 2107h
-stz 2108h
-stz 2109h
-stz 210Ah
-stz 210Bh
-stz 210Ch
+stz $2105
+stz $2106
+stz $2107
+stz $2108
+stz $2109
+stz $210A
+stz $210B
+stz $210C
 
 ; Must write in low high order
-stz 210Dh
-stz 210Dh
-stz 210Eh
-stz 210Eh
-stz 210Fh
-stz 210Fh
-stz 2110h
-stz 2110h
-stz 2111h
-stz 2111h
-stz 2112h
-stz 2112h
-stz 2113h
-stz 2113h
-stz 2114h
-stz 2114h
+stz $210D
+stz $210D
+stz $210E
+stz $210E
+stz $210F
+stz $210F
+stz $2110
+stz $2110
+stz $2111
+stz $2111
+stz $2112
+stz $2112
+stz $2113
+stz $2113
+stz $2114
+stz $2114
 
 ; Single writes
 
-lda #80h  ; inc addr after w/r from 2119h/213Ah (the second VRAM byte)-1x1 inc
-sta 2115h
-stz 2116h
-stz 2117h
+lda #$80  ; inc addr after w/r from 2119h/213Ah (the second VRAM byte)-1x1 inc
+sta $2115
+stz $2116
+stz $2117
 
 ; 2118h VRAM Data
 ; 2119h VRAM Data
 rc_vram_write
 
-stz 211Ah
+stz $211A
 
 ; Double writes again in low high order
-stz 211Bh
-lda #01h  ; mode7 param A: identity matrix 1 
-sta 211Bh
+stz $211B
+lda #$01  ; mode7 param A: identity matrix 1 
+sta $211B
 
-stz 211Ch
-stz 211Ch
+stz $211C
+stz $211C
 
-stz 211Dh
-stz 211Dh
+stz $211D
+stz $211D
 
-stz 211Eh
-lda #01h  ; mode7 param D: identity matrix 1 
-stz 211Eh
+stz $211E
+lda #$01  ; mode7 param D: identity matrix 1 
+stz $211E
 
-stz 211Fh
-stz 211Fh
+stz $211F
+stz $211F
 
-stz 2120h
-stz 2120h
+stz $2120
+stz $2120
 
 ; single write 
-stz 2121h
+stz $2121
 
 ; 2122 IS for CG Data.
 rc_cgdata_write
 
-stz 2123h
-stz 2124h
-stz 2125h
-stz 2126h
-stz 2127h
-stz 2128h
-stz 2129h
-stz 212Ah
-stz 212Bh
-stz 212Ch
-stz 212Dh
-stz 212Eh
+stz $2123
+stz $2124
+stz $2125
+stz $2126
+stz $2127
+stz $2128
+stz $2129
+stz $212A
+stz $212B
+stz $212C
+stz $212D
+stz $212E
 ; No F in the documentation?
 
-lda #30h  ; Color window off 
-sta 2130h
+lda #$30  ; Color window off 
+sta $2130
 
-stz 2131h
+stz $2131
 
-lda #E0h ; BLACK for fixed color addition
-sta 2132h
-stz 2133h
+lda #$E0 ; BLACK for fixed color addition
+sta $2132
+stz $2133
 
 ; CPU registers 
 
-stz 4200h ; NMI-VBlank-flag / V/H Blank / Controller - all disabled
+stz $4200 ; NMI-VBlank-flag / V/H Blank / Controller - all disabled
 
-lda #FFh  ; Write IO set to output all FFs
-sta 4201h
+lda #$FF  ; Write IO set to output all FFs
+sta $4201
 
-stz 4202h
-stz 4203h
-stz 4204h
-stz 4205h
-stz 4206h
-stz 4207h
-stz 4208h
-stz 4209h
-stz 420Ah
-stz 420Bh
-stz 420Ch
-stz 420Dh
+stz $4202
+stz $4203
+stz $4204
+stz $4205
+stz $4206
+stz $4207
+stz $4208
+stz $4209
+stz $420A
+stz $420B
+stz $420C
+stz $420D
 
 .endmacro
 

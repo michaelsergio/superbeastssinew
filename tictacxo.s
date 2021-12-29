@@ -24,7 +24,7 @@
 
 
 ; Follow set up in chapter 23 of manual
-reset:
+Reset:
     ; Not in manual but part of common cpu setup
     init_cpu
     
@@ -34,13 +34,13 @@ reset:
     jsr setup_video
     
     ; Release VBlank
-    lda #0Fh
-    sta 2100h
+    lda #$0F
+    sta $2100
     ; Display Period begins now
 
     ; enable NMI Enable and Joycon
-    lda #81h
-    sta 4200h
+    lda #$81
+    sta $4200
 
     game_loop:
         wai ; Wait for NMI
@@ -53,7 +53,7 @@ reset:
 
 VBlank:
     ; Detect Beginning of VBlank (Appendix B-3)        
-    lda 4210h ; Read NMI flag
+    lda $4210 ; Read NMI flag
     bpl endvblank ; loop if the MSB is 0 N=0  (positive number)
 
     ; TODO: set data changed registers and memory
