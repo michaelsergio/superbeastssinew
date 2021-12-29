@@ -8,10 +8,28 @@
 .include "register_clear.inc"
 
 .macro rc_oam_write
+    ; use 2101 to populate obj
+    lda #$00  ; size is 8dot=000 area(name)select=00 baseaddr=[0]00
+    sta $2101
+
 .endmacro
+
 .macro rc_vram_write
 .endmacro
+
 .macro rc_cgdata_write
+    ; Load Green
+    lda #$F0
+    sta $2122
+    lda #$03u
+    sta $2122
+
+    ;Load Red
+    ; lda #$1F
+    ; sta $2122
+    ; lda #$00
+    ; sta $2122
+
 .endmacro
 
 .macro init_cpu
@@ -32,7 +50,7 @@ Reset:
     register_clear
 
     jsr setup_video
-    
+
     ; Release VBlank
     lda #$0F
     sta $2100
@@ -81,3 +99,8 @@ setup_video:
     ; TODO: Register initial screen settings
     rts
 
+
+.segment "RODATA"
+
+ObjFontA:
+    .byte  $00, $00, $00, $00

@@ -20,14 +20,18 @@ stz $2103
 ; refer to page A-3 and 2-26-2
 rc_oam_write
 
-stz $2105
-stz $2106
+stz $2105 ; 8x8 mode 0. pg A-5
+stz $2106 ; mosaic off
+
+; BG SC base addr and size 
 stz $2107
 stz $2108
 stz $2109
 stz $210A
-stz $210B
-stz $210C
+
+; Set BG char data name base addr 
+stz $210B ; BG1|2
+stz $210C ; BG3|4
 
 ; Must write in low high order
 stz $210D
@@ -107,7 +111,9 @@ sta $2130
 stz $2131
 
 lda #$E0 ; BLACK for fixed color addition
+;lda #$FF ; WHITE for fixed color addition
 sta $2132
+
 stz $2133
 
 ; CPU registers 
