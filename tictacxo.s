@@ -21,15 +21,14 @@
     ; Load Green
     lda #$F0
     sta $2122
-    lda #$03u
+    lda #$03
     sta $2122
 
-    ;Load Red
+    ; Load Red
     ; lda #$1F
     ; sta $2122
     ; lda #$00
     ; sta $2122
-
 .endmacro
 
 .macro init_cpu
@@ -102,5 +101,11 @@ setup_video:
 
 .segment "RODATA"
 
+test_font_a_obj:
+.incbin "imggen/a.pic"
+
+test_font_a_palette:
+.incbin "imggen/a.clr"
+
 ObjFontA:
-    .byte  $00, $00, $00, $00
+;    .byte  $00, $00, $00, $00
