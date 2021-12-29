@@ -1,3 +1,5 @@
+TOOLS:=~/code/snes/tools
+
 all: tictacxo.smc
 
 tictacxo.o: tictacxo.s
@@ -9,3 +11,7 @@ tictacxo.smc: tictacxo.o
 .PHONY: clean
 clean:
 	rm -f *.smc *.o
+
+#images: logo.pcx
+	#$(TOOLS)/pcx2snes/pcx2snes -s32 %@
+

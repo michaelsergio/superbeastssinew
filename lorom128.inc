@@ -10,20 +10,24 @@
 .segment "ROMINFO"    ; +$7FD5 in file
     .byte $30         ; LoROM, fast-capable
     .byte 0           ; no battery RAM
-    .byte $07         ; 128K ROM
-    .byte 0,0,0,0
+    .byte $07         ; 128K ROM size
+    .byte 0,0,0,0     ; 0 SRAM, 0 devid, ???, 0 version number
     .word $AAAA,$5555 ; dummy checksum and complement
+                      ; The devid ??? might be country nad license code
+                      ; Country might be 01 for us and 00 for japan.
 
+; +$FE00 in file???
+; Each vector is 2 byte in size in little endian
+; x means unused
+		; Program Begins in emulation mode at reset vector at $xFFC-D
 .segment "VECTORS"
-    .word 0, 0, 0, 0, 0, 0, 0, 0
-    .word 0, 0, 0, 0, 0, 0, reset, 0
+    ; Native Vector
+		;     x, x, cop, brk, abort,       nmi,   x, irq
+    .word 0, 0,    0,   0,     0,   VBlank,   0,   0
 
+		; Emulation mode Vectors
+		;     x, x, cop,  x, abort, nmi,   reset, irq
+    .word 0, 0,    0, 0,     0,   0,   Reset,   0
 .code
 
-.macro init_cpu
-    clc
-    xce
-    rep #$10        ; X/Y 16-bit
-    sep #$20        ; A 8-bit
-.endmacro
 

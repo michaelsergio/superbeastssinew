@@ -5,71 +5,79 @@
 
 .define ROM_NAME "TICTACXO"
 .include "lorom128.inc"
+.include "register_clear.inc"
 
-.define CGDATA 2122h
-.define INIDISP 2100h
-.define NMITIMEN 4200h
+.macro rc_oam_write
+.endmacro
+.macro rc_vram_write
+.endmacro
+.macro rc_cgdata_write
+.endmacro
 
+.macro init_cpu
+    clc
+    xce
+    rep #$10        ; X/Y 16-bit
+    sep #$20        ; A 8-bit
+.endmacro
+
+
+
+; Follow set up in chapter 23 of manual
 reset:
+    ; Not in manual but part of common cpu setup
     init_cpu
-
-    ; 3.3 Background Example
-
-    ; Clear PPU registers pg 115
-    ldx #$33
-@loop:  stz INIDISP,x
-    stz NMITIMEN,x ; Disable NMI, Disable V/H TIME EN pg 140
-    dex
-    bpl @loop
-
-
-    ; set register 2105h
-    ; bg mode and bg size
-
-    ; set register 2107h - 210Ah
-    ; sc size and sc base addr
-
-    ; set register 210bh and 210ch
-    ; set name base addr
-
-    ; set d0~d3 of register 212Ch set through main BG
-
-    ; Forced Blank
-    ; set register 2115h
-    ; vram address seq mode and h/l inc
-
-
-    ; set register 2116h ~ 2119h
-    ; vraam addr and vram data
-    ; transfer bg-data & bg character data to vram by DMA
-
-    ;set register 2121h and 2122h 
-    ; cg ram addr and cg ram data
-    ; transfer color data to cg (color generator) by DMA
-
-    ; VBLANK
-    ; set register 210Dh ~ 2114h 
-    ; Set BG H/V Offset
-    ; display
-    ; goto vblank
-
-    ; Set background color to $03E0
-    ; Page 212 for colors (A-17)
-    ; Write to CG Ram low/high
-    ; only can be done during h/v blank or forced blank period
-    ; 03E0 is %0000 0011 1110 0000
-    ; Format is %xbbb bbgg gggr rrrr
     
-    ; Red 001F
-    lda #1Fh
-    sta CGDATA
-    lda #00h
-    sta CGDATA
+    ; Move to force blank and clear all the registers
+    register_clear
 
-    ; Maximum screen brightness
-    lda #$0F
-    sta INIDISP
+    jsr setup_video
+    
+    ; Release VBlank
+    lda #0Fh
+    sta 2100h
+    ; Display Period begins now
 
-forever:
-    jmp forever
+    ; enable NMI Enable and Joycon
+    lda #81h
+    sta 4200h
+
+    game_loop:
+        wai ; Wait for NMI
+
+        ; TODO: Gen data of register to be renewed & mem to change BG & OBJ data
+        ; aka Update
+        ; react to input
+
+        jmp game_loop
+
+VBlank:
+    ; Detect Beginning of VBlank (Appendix B-3)        
+    lda 4210h ; Read NMI flag
+    bpl endvblank ; loop if the MSB is 0 N=0  (positive number)
+
+    ; TODO: set data changed registers and memory
+    ; TODO: transfer renewed data via OAM
+    ; TODO: change data settings for BG&OAM that renew picture
+
+    jsr joycon_read
+
+    endvblank: 
+        rti 
+
+joycon_read:
+    lda $4212           ; auto-read joypad status
+    ; TODO: read joycon data (registers 4218h ~ 421Fh)
+    rts
+
+
+setup_video:
+    ; TODO: Main register settings
+    ; TODO: Set OAM, CGRAM Settings
+    ; TODO: Transfer OAM, CGRAM Data via DMA (2 channels)
+    ; TODO: Set VRAM Settings
+    ; TODO: Transfer VRAM Data via DMA
+    ; TODO: Loop VRAM until OBJ, BG CHR, BG SC Data has been transfered
+    ; TODO: Register initial screen settings
+    rts
 
