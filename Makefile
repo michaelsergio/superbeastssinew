@@ -19,14 +19,15 @@ ASSETS_OUT := $(ASSETS_PIC_OUT) $(ASSETS_CLR_OUT)
 
 all: build $(EXECUTABLE)
 
+
+$(EXECUTABLE): $(OUTPUTS_BIN)
+	ld65 -Ln $(BIN_DIR)/$(PROGRAM).lbl -m $(BIN_DIR)/$(PROGRAM).map -C $(LD_CONFIGS) -o $@ $^
+
 $(BIN_DIR)/%.o: %.s
 	ca65 -g $^ -o $@
 
 build: $(ASSETS_OUT)
 	@mkdir -p $(BIN_DIR)
-
-bin/tictacxo.smc: $(OUTPUTS_BIN)
-	ld65 -Ln $(BIN_DIR)/$(PROGRAM).lbl -m $(BIN_DIR)/$(PROGRAM).map -C $(LD_CONFIGS) -o $@ $^
 
 # Generate the image assets 
 imggen/%.clr imggen/%.pic: $(ASSETS)
@@ -44,12 +45,8 @@ assetgen: $(ASSETS_OUT)
 assetclean:
 	rm -f imggen/*.clr imggen/*.pic
 
-
 # Just the code output cleanup
 .PHONY: clean
 clean: assetclean
 	rm -f *.smc *.o *.lbl *.map *.sym $(BIN_DIR)/*
-
-#images: logo.pcx
-	#$(TOOLS)/pcx2snes/pcx2snes -s32 %@
 
