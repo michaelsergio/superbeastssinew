@@ -7,25 +7,25 @@ LD_CONFIGS:= lorom128.cfg
 BIN_DIR:=bin
 
 ASSETS:=$(wildcard imgraw/*.pcx)
-
 OUTPUTS := $(SOURCES:.s=.o)
+OUTPUTS_BIN := $(OUTPUTS:%=bin/%)
+EXECUTABLE := $(BIN_DIR)/$(PROGRAM).smc
 
 # Combine the assets outputs
 ASSETS_PIC_OUT := $(patsubst imgraw/%, imggen/%, $(patsubst %.pcx, %.pic, $(ASSETS)))
 ASSETS_CLR_OUT := $(patsubst imgraw/%, imggen/%, $(patsubst %.pcx, %.clr, $(ASSETS)))
 ASSETS_OUT := $(ASSETS_PIC_OUT) $(ASSETS_CLR_OUT)
 
-EXECUTABLE := $(BIN_DIR)/$(PROGRAM).smc
 
 all: build $(EXECUTABLE)
 
-%.o: %.s
-	ca65 -g $^
+$(BIN_DIR)/%.o: %.s
+	ca65 -g $^ -o $@
 
 build: $(ASSETS_OUT)
 	@mkdir -p $(BIN_DIR)
 
-bin/tictacxo.smc: $(OUTPUTS)
+bin/tictacxo.smc: $(OUTPUTS_BIN)
 	ld65 -Ln $(BIN_DIR)/$(PROGRAM).lbl -m $(BIN_DIR)/$(PROGRAM).map -C $(LD_CONFIGS) -o $@ $^
 
 # Generate the image assets 
@@ -48,7 +48,7 @@ assetclean:
 # Just the code output cleanup
 .PHONY: clean
 clean: assetclean
-	rm -f *.smc *.o *.lbl *.map *.sym
+	rm -f *.smc *.o *.lbl *.map *.sym $(BIN_DIR)/*
 
 #images: logo.pcx
 	#$(TOOLS)/pcx2snes/pcx2snes -s32 %@
