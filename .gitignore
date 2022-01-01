@@ -1,4 +1,4 @@
-imggen/
+imggen/*
 *.o
 *.smc
 *.sym
