@@ -1,4 +1,5 @@
 TOOLS:=~/code/snes/tools
+PCX2SNES:=pcx2snes/pcx2snes
 
 all: tictacxo.smc
 
@@ -7,6 +8,13 @@ tictacxo.o: tictacxo.s
 
 tictacxo.smc: tictacxo.o
 	ld65 -Ln tic.lbl -m tic.map -C lorom128.cfg -o $@ $^
+
+imagegen: imgraw/a
+	cd imgraw
+	$(TOOLS)/$(PCX2SNES) -n -s8 -c4 -o4 imgraw/a
+	mv imgraw/a.clr ../imggen/a.clr
+	mv imgraw/a.pic ../imggen/a.pic
+ 
 
 .PHONY: clean
 clean:
