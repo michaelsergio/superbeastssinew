@@ -10,7 +10,7 @@ tictacxo.smc: tictacxo.o
 
 .PHONY: clean
 clean:
-	rm -f *.smc *.o *.lbl *.map
+	rm -f *.smc *.o *.lbl *.map *.sym
 
 #images: logo.pcx
 	#$(TOOLS)/pcx2snes/pcx2snes -s32 %@
