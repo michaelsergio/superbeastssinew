@@ -4,3 +4,4 @@ imggen/*
 *.sym
 *.lbl
 *.map
+bin/
