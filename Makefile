@@ -17,7 +17,7 @@ ASSETS_CLR_OUT := $(patsubst imgraw/%, imggen/%, $(patsubst %.pcx, %.clr, $(ASSE
 ASSETS_OUT := $(ASSETS_PIC_OUT) $(ASSETS_CLR_OUT)
 
 
-all: build $(EXECUTABLE)
+all: build $(EXECUTABLE) debuglabels
 
 
 $(EXECUTABLE): $(OUTPUTS_BIN)
@@ -50,3 +50,12 @@ assetclean:
 clean: assetclean
 	rm -f *.smc *.o *.lbl *.map *.sym $(BIN_DIR)/*
 
+
+CPU_SYM:=$(BIN_DIR)/$(PROGRAM).cpu.sym
+.PHONY: debuglabels
+debuglabels: 
+	$(shell echo '#SNES65816\n\n' > $(CPU_SYM))
+	$(shell echo '[SYMBOL]' >> $(CPU_SYM))
+	$(shell awk '{print tolower(substr($$2, 0, 2)) ":" tolower(substr($$2, 3)), $$3, "ANY", 1}' $(BIN_DIR)/$(PROGRAM).lbl >> $(CPU_SYM))
+	$(shell echo '\n[COMMENT]' >> $(CPU_SYM))
+	$(shell echo '\n[COMMAND]' >> $(CPU_SYM))
