@@ -1,3 +1,6 @@
 imggen/
 *.o
 *.smc
+*.sym
+*.lbl
+*.map

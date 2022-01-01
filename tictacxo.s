@@ -6,29 +6,14 @@
 .define ROM_NAME "TICTACXO"
 .include "lorom128.inc"
 .include "register_clear.inc"
+.include "graphics.inc"
+
 
 .macro rc_oam_write
-    ; use 2101 to populate obj
-    lda #$00  ; size is 8dot=000 area(name)select=00 baseaddr=[0]00
-    sta $2101
-
 .endmacro
-
 .macro rc_vram_write
 .endmacro
-
 .macro rc_cgdata_write
-    ; Load Green
-    lda #$F0
-    sta $2122
-    lda #$03
-    sta $2122
-
-    ; Load Red
-    ; lda #$1F
-    ; sta $2122
-    ; lda #$00
-    ; sta $2122
 .endmacro
 
 .macro init_cpu
@@ -37,8 +22,6 @@
     rep #$10        ; X/Y 16-bit
     sep #$20        ; A 8-bit
 .endmacro
-
-
 
 ; Follow set up in chapter 23 of manual
 Reset:
@@ -51,8 +34,8 @@ Reset:
     jsr setup_video
 
     ; Release VBlank
-    lda #$0F
-    sta $2100
+    lda #$0F   ; Full brightness
+    sta $2100 
     ; Display Period begins now
 
     ; enable NMI Enable and Joycon
@@ -89,17 +72,68 @@ joycon_read:
 
 
 setup_video:
-    ; TODO: Main register settings
-    ; TODO: Set OAM, CGRAM Settings
+    ; Main register settings
+    ; Mode 0 is OK for now
+
+    ; Set OAM, CGRAM Settings
+    ; We're going to DMA the graphics instead of using 2121/2122
+    load_palette test_font_a_palette, 0, 4
+
+
     ; TODO: Transfer OAM, CGRAM Data via DMA (2 channels)
-    ; TODO: Set VRAM Settings
-    ; TODO: Transfer VRAM Data via DMA
+
+    ; Set VRAM Settings
+    ; Transfer VRAM Data via DMA
+
+    ; Load tile data to VRAM
+    load_block_to_vram test_font_a_obj, $0000, $0020 ; 2 tiles, 2bpp = 32 bytes
+
+    jsr load_tile
+
     ; TODO: Loop VRAM until OBJ, BG CHR, BG SC Data has been transfered
-    ; TODO: Register initial screen settings
+
+    ; Register initial screen settings
+    jsr register_screen_settings
+
     rts
 
+load_tile:
+    ; This should already be in load_block_to_vram via DMA
+    ; now load data into the tile map 
+    lda #$80   ; word single inc (HL Inc is set to 1)
+    sta $2115  
+    ; Write the tile name "1" to the Tile Map ($0400) to display at topleft (0,0)
+    ldx #$0400 ; to vram address 0400 (1024 bc of tilemap addr increments)
+    stx $2116
+    lda #$01    
+    sta $2118
+    ; This is weird to me because we onlu write to the local block but
+    ; we are supposed to increment when writing to the high block (2119)
+    ; according to the 80 passed in to 2115s
+    ; Update: Ahh but the DMA Transfer type (4300) is 2 regs 001, so DMA 
+    ;         alternates between writing 2118 and 2119. This happened
+    ;         in the load_block_to_vram (load_vram) macro.
+
+
+    rts
+
+register_screen_settings:
+    stz $2105 ; mode 0 8x8 4 color 4bgs
+
+    lda #$04  ; Tile Map Location - set BG1 tile offset to $0400 (Word addr)
+    sta $2107 ; BG1SC 
+    stz $210B ; BG1 name base address to $0000 (word addr)
+    lda #$01  ; Enable BG1 as main screen.
+    sta $212C ;
+
+    lda #$FF  ; Scroll down 1023 (FF really 03FF 63) 
+    sta $210E
+    sta $210E ; Set V offset Low, High, to FFFF for BG1
+    rts
 
 .segment "RODATA"
+; TODO I want to put this on a different bank
+;.segment "BANK1"
 
 test_font_a_obj:
 .incbin "imggen/a.pic"
@@ -108,4 +142,4 @@ test_font_a_palette:
 .incbin "imggen/a.clr"
 
 ObjFontA:
-;    .byte  $00, $00, $00, $00
+    .byte  $00, $00, $00, $00

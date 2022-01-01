@@ -86,7 +86,7 @@ stz $2120
 stz $2120
 
 ; single write 
-stz $2121
+stz $2121 ; CG Addr set to 0
 
 ; 2122 IS for CG Data.
 rc_cgdata_write
