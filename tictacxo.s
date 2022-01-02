@@ -146,8 +146,7 @@ register_screen_settings:
     lda #$01  ; Enable BG1 as main screen.
     sta $212C ;
 
-    ;lda #$FF  ; Scroll down 1023 (FF really 03FF 63) 
-    lda #$F0  ; Scroll down 1023 (FF really 03FF 63) 
+    lda #$FF  ; Scroll down 1023 (FF really 03FF 63) 
     sta $210E
     sta $210E ; Set V offset Low, High, to FFFF for BG1
     rts
