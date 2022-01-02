@@ -134,6 +134,10 @@ load_tile:
     stx $2116
     lda #$01    
     sta $2118
+    ldx #$0760  ; (bottom left?, aka (27,0)) $EC0 / 2
+    stx $2116
+    lda #$01    
+    sta $2118
 
     rts
 
