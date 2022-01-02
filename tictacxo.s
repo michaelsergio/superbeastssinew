@@ -98,8 +98,9 @@ setup_video:
     rts
 
 load_tile:
-    ; This should already be in load_block_to_vram via DMA
-    ; now load data into the tile map 
+    ; The tile should already be in VRAM from the load_block_to_vram via DMA
+    ; There are two tile (empty at 0000 and A at 0010).
+    ; Now load data into the tile map 
     lda #$80   ; word single inc (HL Inc is set to 1)
     sta $2115  
     ; Write the tile name "1" to the Tile Map ($0400) to display at topleft (0,0)
@@ -107,13 +108,32 @@ load_tile:
     stx $2116
     lda #$01    
     sta $2118
-    ; This is weird to me because we onlu write to the local block but
+    ; This is weird to me because we only write to the local block but
     ; we are supposed to increment when writing to the high block (2119)
     ; according to the 80 passed in to 2115s
     ; Update: Ahh but the DMA Transfer type (4300) is 2 regs 001, so DMA 
     ;         alternates between writing 2118 and 2119. This happened
     ;         in the load_block_to_vram (load_vram) macro.
 
+    ; Expirement second tile
+    ldx #$0401 ; to vram address 0400 (1024 bc of tilemap addr increments)
+    stx $2116
+    lda #$01    
+    sta $2118
+
+    ; Expirement more tiles
+    ldx #$040F  ; (pos 16)
+    stx $2116
+    lda #$01    
+    sta $2118
+    ldx #$041F  ; (pos 32)
+    stx $2116
+    lda #$01    
+    sta $2118
+    ldx #$0420  ; (pos 33, aka (0,1))
+    stx $2116
+    lda #$01    
+    sta $2118
 
     rts
 
@@ -126,7 +146,8 @@ register_screen_settings:
     lda #$01  ; Enable BG1 as main screen.
     sta $212C ;
 
-    lda #$FF  ; Scroll down 1023 (FF really 03FF 63) 
+    ;lda #$FF  ; Scroll down 1023 (FF really 03FF 63) 
+    lda #$F0  ; Scroll down 1023 (FF really 03FF 63) 
     sta $210E
     sta $210E ; Set V offset Low, High, to FFFF for BG1
     rts
