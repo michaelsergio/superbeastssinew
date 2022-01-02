@@ -118,8 +118,11 @@ load_tile:
     ; Expirement second tile
     ldx #$0401 ; to vram address 0400 (1024 bc of tilemap addr increments)
     stx $2116
+    ;lda #$01    
     lda #$01    
     sta $2118
+    lda #$C0 ; Flip V & H for fun
+    sta $2119
 
     ; Expirement more tiles
     ldx #$040F  ; (pos 16)
