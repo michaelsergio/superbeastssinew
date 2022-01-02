@@ -140,7 +140,7 @@ load_tile:
 register_screen_settings:
     stz $2105 ; mode 0 8x8 4 color 4bgs
 
-    lda #$04  ; Tile Map Location - set BG1 tile offset to $0400 (Word addr)
+    lda #$04  ; Tile Map Location - set BG1 tile offset to $0400 (Word addr) (0800 in vram) with sc_size=00
     sta $2107 ; BG1SC 
     stz $210B ; BG1 name base address to $0000 (word addr)
     lda #$01  ; Enable BG1 as main screen.
