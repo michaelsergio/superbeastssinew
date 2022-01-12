@@ -7,8 +7,8 @@
 .include "snes_registers.asm"
 .include "lorom128.inc"
 .include "register_clear.inc"
-.include "graphics.inc"
-.include "chars.inc"
+.include "graphics.asm"
+.include "chars.asm"
 
 .macro rc_oam_write
 .endmacro
