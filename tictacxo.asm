@@ -1,9 +1,5 @@
-; Displays green screen
-;
-; ca65 green.s
-; ld65 -C lorom128.cfg -o green.smc green.o
-
 .define ROM_NAME "TICTACXO"
+
 .include "snes_registers.asm"
 .include "lorom128.inc"
 .include "register_clear.inc"
@@ -11,26 +7,12 @@
 .include "chars.asm"
 .include "tileswitch.asm"
 
-.macro rc_oam_write
-.endmacro
-.macro rc_vram_write
-.endmacro
-.macro rc_cgdata_write
-.endmacro
-
-.macro init_cpu
-    clc
-    xce
-    rep #$10        ; X/Y 16-bit
-    sep #$20        ; A 8-bit
-.endmacro
 
 .segment "ZEROPAGE"
 JoyInput: .res 2, $0000
 ScrollBg1: .res 1, $00
 
 .segment "CODE"
-
 
 ; Follow set up in chapter 23 of manual
 Reset:

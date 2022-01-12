@@ -1,10 +1,16 @@
+; Inits the CPU to non-emulation mode (16 bit mode)
+; With the accumulator (M) as 8 bit
+; and the X/Y register (X) as 16 bit
+.macro init_cpu
+    clc
+    xce
+    rep #$10        ; X/Y 16-bit (reset P with mask)
+    sep #$20        ; A 8-bit    (set P with mask)
+.endmacro
+
+
 ; Initial Settings as described in Chapter 26 of SNES Manual
 ; Results in forced blank state with all registers cleared
-;
-; must define the following macros:
-; rc_oam_write: OAM Data: Write to 2104h
-; rc_vram_write: VRAM Data: Write to low/high 2118h/2119h
-; rc_cgdata_write: CGRam Data: Write to 2122h
 .macro register_clear
 
 ; PPU Registers
@@ -18,7 +24,6 @@ stz $2103
 
 ; 2104h gets OAM Data
 ; refer to page A-3 and 2-26-2
-rc_oam_write
 
 stz $2105 ; 8x8 mode 0. pg A-5
 stz $2106 ; mosaic off
@@ -60,7 +65,6 @@ stz $2117
 
 ; 2118h VRAM Data
 ; 2119h VRAM Data
-rc_vram_write
 
 stz $211A
 
@@ -89,7 +93,6 @@ stz $2120
 stz $2121 ; CG Addr set to 0
 
 ; 2122 IS for CG Data.
-rc_cgdata_write
 
 stz $2123
 stz $2124
