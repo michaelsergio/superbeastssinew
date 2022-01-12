@@ -4,11 +4,10 @@
 ; size: number of Bytes to copy
 ; modifies a, x, y
 .macro load_block_to_vram src_addr, dest, size
-    lda #$80
-    sta $2115 ; VRAM mode word access, inc 1.
-    lda #$ca
+    lda #V_INC_1
+    sta VMAIN ; VRAM mode word access, inc 1.
     ldx #dest
-    stx $2116 ; destination of vram
+    stx VMADDL ; destination of vram
 
     ; Make call to load_vram
     lda #^src_addr  ; Gets the bank of the src_addr
@@ -25,17 +24,17 @@ load_vram:
     phb  ; store bank
     php  ; store processor status registers
 
-    stx $4302 ; DMA data offset
-    sta $4304 ; DMA data bank
-    sty $4305 ; DMA size
+    stx (CH0 + A1TxL)   ; DMA data offset
+    sta (CH0 + A1Bx)    ; DMA data bank
+    sty (CH0 + DASxL)   ; DMA size
 
-    lda #$01  ; DNA mode WORD (for VRAM 2-addr L,H)
-    sta $4300
-    lda #$18  ; DMA destination register 2118 (VRAM data write)
-    sta $4301
+    lda #$01            ; DMA mode WORD (for VRAM 2-addr L,H)
+    sta (CH0 + DMAPx)
+    lda #$18            ; DMA destination register 2118 (VRAM data write)
+    sta (CH0 + BBADx)
 
-    lda $01   ; DMA channel 0
-    sta $420B ; Initiate transfer
+    lda $01     ; DMA channel 0
+    sta MDMAEN  ; Initiate transfer
 
     plp
     plb
@@ -62,17 +61,17 @@ dma_palette:
     phb  ; store bank
     php  ; store processor status registers
 
-    stx $4302 ; DMA data offset
-    sta $4304 ; DMA data bank
-    sty $4305 ; DMA size
+    stx (CH0 + A1TxL)   ; DMA data offset
+    sta (CH0 + A1Bx)    ; DMA data bank
+    sty (CH0 + DASxL)   ; DMA size
 
-    stz $4300 ; DMA mode: byte, normal inc
+    stz (CH0 + DMAPx)
 
-    lda #$22  ; DMA dest register - $2122
-    sta $4301 
+    lda #$22            ; DMA dest register - $2122
+    sta (CH0 + BBADx)
 
-    lda #$01  ; DMA Channel 0
-    sta $420B ; Initiate!
+    lda #$01            ; DMA Channel 0
+    sta MDMAEN          ; Initiate!
 
     plp
     plb

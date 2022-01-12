@@ -181,6 +181,7 @@ register_screen_settings:
     sta BG1VOFS ; Set V offset Low, High, to FFFF for BG1
     rts
 
+
 .segment "RODATA"
 
 test_font_a_obj:
