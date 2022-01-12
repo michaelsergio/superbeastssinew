@@ -148,7 +148,7 @@ setup_video:
 
 ; Needs loaded tileset in VRAM at $0200 (40 chars in length)
 .macro putchar position, char_index
-    ldx #($0400 + position)  ; pos 3 (0, 3) in words from offset 0400
+    ldx #($0400 + position)  ; pos x+y*32 (x, y) in words from offset 0400
     stx $2116
     lda #char_index    ; char B
     sta $2118
@@ -218,6 +218,37 @@ load_tile:
     lda #$01    
     sta $2118
 
+    ; Try and write the whole charset using auto increment
+    lda #$00   ; 1 word increment
+    sta $2115  
+    ldx #($0400 + (5 + 2 * 32))  ; pos x+y*32 (x, y) in words from offset 0400
+    stx $2116
+    ; Charset base moved forward $8 to go into middle
+    ldy #$5                     ; write 5 chars from charset
+    lda #($20 + ('G' - 65 + 1))    ; start at G and ignore space
+    write_charset: 
+        sta $2118
+        ina
+        dey
+        bne write_charset
+
+    print_hello_world:
+        lda #$00   ; 1 word increment
+        sta $2115  
+        ldx #($0400 + (5 + 12 * 32))    ; pos x+y*32 (x, y) in words from offset 0400
+        stx $2116                           ; Write to middle of screen
+        ldy #$00                        ; Index for word
+        @write: 
+            lda message_hello_world, y
+            beq @end_of_str             ; Check for null byte at end
+            clc
+            adc #$0C
+            sta $2118
+            iny
+            bra @write
+        @end_of_str:
+
+
     rts
 
 register_screen_settings:
@@ -246,6 +277,11 @@ font_charset:
 
 test_font_a_palette:
 .incbin "imggen/a.clr"
+
+; This is converted from ascii - 44
+message_hello_world:
+;       H    E    L    L    O    sp   W    O    R    L    D   NULL
+.byte $1C, $19, $20, $20, $23, $14, $2B,  $23, $26, $20, $18, $00
 
 ObjFontA:
     .byte  $00, $00, $00, $00
