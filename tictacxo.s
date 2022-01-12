@@ -3,16 +3,11 @@
 ; ca65 green.s
 ; ld65 -C lorom128.cfg -o green.smc green.o
 
-.segment "ZEROPAGE"
-JoyInput: .res 2, $0000
-TileSelector: .res 1, $00
-ScrollBG1: .res 1, $00
-
 .define ROM_NAME "TICTACXO"
 .include "lorom128.inc"
 .include "register_clear.inc"
 .include "graphics.inc"
-
+.include "chars.inc"
 
 .macro rc_oam_write
 .endmacro
@@ -27,6 +22,14 @@ ScrollBG1: .res 1, $00
     rep #$10        ; X/Y 16-bit
     sep #$20        ; A 8-bit
 .endmacro
+
+.segment "ZEROPAGE"
+JoyInput: .res 2, $0000
+TileSelector: .res 1, $00
+ScrollBG1: .res 1, $00
+
+.segment "CODE"
+
 
 ; Follow set up in chapter 23 of manual
 Reset:
@@ -83,7 +86,6 @@ VBlank:
 
     ; Switch current tile
     jsr switch_tile
-    
 
     endvblank: 
         rti 
@@ -158,21 +160,6 @@ scroll_the_screen:
     stz $210D
     rts
 
-; Needs loaded tileset in VRAM at $0200 (40 chars in length)
-.macro putchar position, char_index
-    ldx #($0400 + position)  ; pos x+y*32 (x, y) in words from offset 0400
-    stx $2116
-    lda #char_index    ; char B
-    sta $2118
-.endmacro
-
-.macro put_alpha letter, posx, posy
-    putchar (posx + posy * 32), ((letter - 65 + 1) + $20) 
-.endmacro
-
-.macro putB position
-    putchar position, $22 
-.endmacro
 
 load_tile:
     ; The tile should already be in VRAM from the load_block_to_vram via DMA
@@ -201,64 +188,12 @@ load_tile:
     lda #$C0 ; Flip V & H for fun (Turn A)
     sta $2119
 
-    ; Load B from the second charset
-    ; ldx #$0402  ; pos 3 (0, 3) in words from offset 0400
-    ; stx $2116
-    ; lda #$22    ; char B
-    ; sta $2118
-    putB 2
-    put_alpha 'C', 3, 0
-    put_alpha 'Q', 4, 1
 
-
+    load_chars_to_screen
     ; Expirement more tiles
-    ldx #$040F  ; (pos 16)
-    stx $2116
-    lda #$01    
-    sta $2118
-    ldx #$041F  ; (pos 32)
-    stx $2116
-    lda #$01    
-    sta $2118
-    ldx #$0420  ; (pos 33, aka (0,1))
-    stx $2116
-    lda #$01    
-    sta $2118
-    ldx #$0760  ; (bottom left?, aka (27,0)) $EC0 / 2
-    stx $2116
-    lda #$01    
-    sta $2118
-
-    ; Try and write the whole charset using auto increment
-    lda #$00   ; 1 word increment
-    sta $2115  
-    ldx #($0400 + (5 + 2 * 32))  ; pos x+y*32 (x, y) in words from offset 0400
-    stx $2116
-    ; Charset base moved forward $8 to go into middle
-    ldy #$5                     ; write 5 chars from charset
-    lda #($20 + ('G' - 65 + 1))    ; start at G and ignore space
-    write_charset: 
-        sta $2118
-        ina
-        dey
-        bne write_charset
-
-    print_hello_world:
-        lda #$00   ; 1 word increment
-        sta $2115  
-        ldx #($0400 + (5 + 12 * 32))    ; pos x+y*32 (x, y) in words from offset 0400
-        stx $2116                           ; Write to middle of screen
-        ldy #$00                        ; Index for word
-        @write: 
-            lda message_hello_world, y
-            beq @end_of_str             ; Check for null byte at end
-            clc
-            adc #$0C
-            sta $2118
-            iny
-            bra @write
-        @end_of_str:
-
+    load_chars_in_corner
+    write_charset_with_autoinc
+    print_hello_world
 
     rts
 
@@ -277,8 +212,6 @@ register_screen_settings:
     rts
 
 .segment "RODATA"
-; TODO I want to put this on a different bank
-;.segment "BANK1"
 
 test_font_a_obj:
 .incbin "imggen/a.pic"
@@ -288,11 +221,6 @@ font_charset:
 
 test_font_a_palette:
 .incbin "imggen/a.clr"
-
-; This is converted from ascii - 44
-message_hello_world:
-;       H    E    L    L    O    sp   W    O    R    L    D   NULL
-.byte $1C, $19, $20, $20, $23, $14, $2B,  $23, $26, $20, $18, $00
 
 ObjFontA:
     .byte  $00, $00, $00, $00
