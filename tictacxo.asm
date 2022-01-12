@@ -9,6 +9,7 @@
 .include "register_clear.inc"
 .include "graphics.asm"
 .include "chars.asm"
+.include "tileswitch.asm"
 
 .macro rc_oam_write
 .endmacro
@@ -68,7 +69,7 @@ VBlank:
     ; TODO: transfer renewed data via OAM
     ; TODO: change data settings for BG&OAM that renew picture
 
-    jsr scroll_the_screen
+    ;jsr scroll_the_screen
 
     jsr joycon_read
 
@@ -132,8 +133,8 @@ scroll_the_screen:
     lda ScrollBG1
     ina
     sta ScrollBG1
-    sta $210D
-    stz $210D
+    sta BG1HOFS
+    stz BG1HOFS
     rts
 
 
@@ -142,12 +143,12 @@ load_tile:
     ; There are two tile (empty at 0000 and A at 0010).
     ; Now load data into the tile map 
     lda #$80   ; word single inc (HL Inc is set to 1)
-    sta $2115  
+    sta VMAIN  
     ; Write the tile name "1" to the Tile Map ($0400) to display at topleft (0,0)
     ldx #$0400 ; to vram address 0400 (1024 bc of tilemap addr increments)
-    stx $2116
+    stx VMADDL
     lda #$01    
-    sta $2118
+    sta VMDATAL
     ; This is weird to me because we only write to the local block but
     ; we are supposed to increment when writing to the high block (2119)
     ; according to the 80 passed in to 2115s
@@ -157,12 +158,12 @@ load_tile:
 
     ; Expirement second tile
     ldx #$0401 ; to vram address 0401
-    stx $2116
+    stx VMAIN
     ;lda #$01    
     lda #$01    
-    sta $2118
+    sta VMDATAL
     lda #$C0 ; Flip V & H for fun (Turn A)
-    sta $2119
+    sta VMDATAH
 
 
     load_chars_to_screen

@@ -1,3 +1,4 @@
+.code 
 switch_tile:
     ldx #$0400          ; Base address of VRAM
     lda TileSelector

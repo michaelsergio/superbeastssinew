@@ -2,12 +2,12 @@ TOOLS:=~/code/snes/tools
 PCX2SNES:=pcx2snes/pcx2snes
 
 PROGRAM:=tictacxo
-SOURCES:=tictacxo.s
+SOURCES:=tictacxo.asm
 LD_CONFIGS:= lorom128.cfg
 BIN_DIR:=bin
 
 ASSETS:=$(wildcard imgraw/*.pcx)
-OUTPUTS := $(SOURCES:.s=.o)
+OUTPUTS := $(SOURCES:.asm=.o)
 OUTPUTS_BIN := $(OUTPUTS:%=bin/%)
 EXECUTABLE := $(BIN_DIR)/$(PROGRAM).smc
 
@@ -23,7 +23,7 @@ all: build $(EXECUTABLE) debuglabels
 $(EXECUTABLE): $(OUTPUTS_BIN)
 	ld65 -Ln $(BIN_DIR)/$(PROGRAM).lbl -m $(BIN_DIR)/$(PROGRAM).map -C $(LD_CONFIGS) -o $@ $^
 
-$(BIN_DIR)/%.o: %.s
+$(BIN_DIR)/%.o: %.asm
 	ca65 -g $^ -o $@
 
 build: $(ASSETS_OUT)
