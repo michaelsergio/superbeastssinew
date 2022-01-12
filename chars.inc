@@ -5,9 +5,9 @@
 ; Needs loaded tileset in VRAM at $0200 (40 chars in length)
 .macro putchar position, char_index
     ldx #($0400 + position)  ; pos x+y*32 (x, y) in words from offset 0400
-    stx $2116
+    stx VMADDL
     lda #char_index    ; char B
-    sta $2118
+    sta VMDATAL
 .endmacro
 
 .macro put_alpha letter, posx, posy
@@ -21,9 +21,9 @@
 .macro load_chars_to_screen
     ; Load B from the second charset
     ; ldx #$0402  ; pos 3 (0, 3) in words from offset 0400
-    ; stx $2116
+    ; stx VMADDL
     ; lda #$22    ; char B
-    ; sta $2118
+    ; sta VMDATAL
     putB 2
     put_alpha 'C', 3, 0
     put_alpha 'Q', 4, 1
@@ -33,31 +33,31 @@
 .macro write_charset_with_autoinc
     ; Try and write the whole charset using auto increment
     lda #$00   ; 1 word increment
-    sta $2115  
+    sta VMAIN
     ldx #($0400 + (5 + 2 * 32))  ; pos x+y*32 (x, y) in words from offset 0400
-    stx $2116
+    stx VMADDL
     ; Charset base moved forward $8 to go into middle
     ldy #$5                     ; write 5 chars from charset
     lda #($20 + ('G' - 65 + 1))    ; start at G and ignore space
     write_charset: 
-        sta $2118
+        sta VMDATAL
         ina
         dey
         bne write_charset
 .endmacro
 
 .macro print_hello_world
-    lda #$00   ; 1 word increment
-    sta $2115  
+    lda #$00   ; 1 word autoincrement
+    sta VMAIN
     ldx #($0400 + (5 + 12 * 32))    ; pos x+y*32 (x, y) in words from offset 0400
-    stx $2116                       ; Write to middle of screen
+    stx VMADDL                      ; Write to middle of screen
     ldy #$00                        ; Index for word
     @write: 
         lda message_hello_world, y
         beq @end_of_str             ; Check for null byte at end
         clc
         adc #$0C        ; This is a hack to get things working. I'm not sure why my offset is $0C in the tilemap
-        sta $2118
+        sta VMDATAL
         iny
         bra @write
     @end_of_str:
@@ -65,21 +65,21 @@
 
 .macro load_chars_in_corner
     ldx #$040F  ; (pos 16)
-    stx $2116
+    stx VMADDL
     lda #$01    
-    sta $2118
+    sta VMDATAL
     ldx #$041F  ; (pos 32)
-    stx $2116
+    stx VMADDL
     lda #$01    
-    sta $2118
+    sta VMDATAL
     ldx #$0420  ; (pos 33, aka (0,1))
-    stx $2116
+    stx VMADDL
     lda #$01    
-    sta $2118
+    sta VMDATAL
     ldx #$0760  ; (bottom left?, aka (27,0)) $EC0 / 2
-    stx $2116
+    stx VMADDL
     lda #$01    
-    sta $2118
+    sta VMDATAL
 .endmacro
 
 .segment "RODATA"

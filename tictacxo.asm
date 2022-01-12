@@ -4,6 +4,7 @@
 ; ld65 -C lorom128.cfg -o green.smc green.o
 
 .define ROM_NAME "TICTACXO"
+.include "snes_registers.asm"
 .include "lorom128.inc"
 .include "register_clear.inc"
 .include "graphics.inc"
@@ -42,20 +43,12 @@ Reset:
     jsr setup_video
 
     ; Release VBlank
-    lda #$0F   ; Full brightness
-    sta $2100 
+    lda #FULL_BRIGHT  ; Full brightness
+    sta INIDISP
+
     ; Display Period begins now
-
-    ; enable NMI Enable and Joycon
-    lda #$81
-    sta $4200
-
-    ; Init vars
-    ldx #$00
-    stx JoyInput
-    stz TileSelector
-    stz ScrollBG1
-
+    lda #(NMI_ON | AUTO_JOY_ON) ; enable NMI Enable and Joycon
+    sta NMITIMEN
 
     game_loop:
         wai ; Wait for NMI
@@ -68,7 +61,7 @@ Reset:
 
 VBlank:
     ; Detect Beginning of VBlank (Appendix B-3)        
-    lda $4210 ; Read NMI flag
+    lda RDNMI; Read NMI flag
     bpl endvblank ; loop if the MSB is 0 N=0  (positive number)
 
     ; TODO: set data changed registers and memory
