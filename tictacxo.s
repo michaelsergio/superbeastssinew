@@ -154,8 +154,8 @@ setup_video:
     sta $2118
 .endmacro
 
-.macro put_alpha letter, position
-    putchar position, ((letter - 65 + 1) + $20) 
+.macro put_alpha letter, posx, posy
+    putchar (posx + posy * 32), ((letter - 65 + 1) + $20) 
 .endmacro
 
 .macro putB position
@@ -196,7 +196,8 @@ load_tile:
     ; lda #$22    ; char B
     ; sta $2118
     putB 2
-    put_alpha 'C', 3
+    put_alpha 'C', 3, 0
+    put_alpha 'Q', 4, 1
 
 
     ; Expirement more tiles
