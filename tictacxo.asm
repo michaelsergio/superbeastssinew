@@ -28,7 +28,7 @@
 .segment "ZEROPAGE"
 JoyInput: .res 2, $0000
 TileSelector: .res 1, $00
-ScrollBG1: .res 1, $00
+ScrollBg1: .res 1, $00
 
 .segment "CODE"
 
@@ -130,9 +130,9 @@ setup_video:
     rts
 
 scroll_the_screen:
-    lda ScrollBG1
+    lda ScrollBg1
     ina
-    sta ScrollBG1
+    sta ScrollBg1
     sta BG1HOFS
     stz BG1HOFS
     rts
@@ -180,8 +180,8 @@ register_screen_settings:
     lda #$04  ; Tile Map Location - set BG1 tile offset to $0400 (Word addr) (0800 in vram) with sc_size=00
     sta $2107 ; BG1SC 
     stz $210B ; BG1 name base address to $0000 (word addr)
-    lda #$01  ; Enable BG1 as main screen.
-    sta $212C ;
+    lda #BG1_ON ; Enable BG1 as main screen.
+    sta $212C 
 
     lda #$FF  ; Scroll down 1 pixel (FF really 03FF 63) (add -1 in 2s complement)
     sta $210E
