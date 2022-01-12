@@ -3,6 +3,10 @@
 ; ca65 green.s
 ; ld65 -C lorom128.cfg -o green.smc green.o
 
+.segment "ZEROPAGE"
+JoyInput: .res 2, $0000
+TileSelector: .res 1, $00
+
 .define ROM_NAME "TICTACXO"
 .include "lorom128.inc"
 .include "register_clear.inc"
@@ -42,6 +46,12 @@ Reset:
     lda #$81
     sta $4200
 
+    ; Init vars
+    ldx #$00
+    stx JoyInput
+    stz TileSelector
+
+
     game_loop:
         wai ; Wait for NMI
 
@@ -62,12 +72,50 @@ VBlank:
 
     jsr joycon_read
 
+    ; Check for A key
+    lda JoyInput
+    and #$80        ; check for A key 
+    beq endvblank   ; skip if no input (if zero)
+
+    ; Switch current tile
+    jsr switch_tile
+    
+
     endvblank: 
         rti 
 
+switch_tile:
+    ldx #$0400 
+    lda TileSelector
+    tax
+    stx $2116   ; Old tile
+    stz $2118   ; Clear it
+
+    inc         ; store next tile
+    sta TileSelector
+    tax
+    stx $2116   ; Next tile addr
+    lda #$01    ; set to tile name 1
+    sta $2118
+    lda #$C0 ; Flip V & H for fun
+    sta $2119
+
+    rts
+
 joycon_read:
-    lda $4212           ; auto-read joypad status
-    ; TODO: read joycon data (registers 4218h ~ 421Fh)
+    lda $4212   ; auto-read joypad status
+    and #$01    ; Check low bit to see if ready to be read.
+    bne end_joycon_read
+
+    rep #$30    ; A/X/Y - 16 bit
+
+    ; read joycon data (registers 4218h ~ 421Fh)
+    lda $4218    ; Controller 1 as 16 bit.
+    sta JoyInput
+
+    sep #$20    ; Go back to A 8-bit
+
+    end_joycon_read:
     rts
 
 
