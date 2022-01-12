@@ -135,6 +135,7 @@ setup_video:
 
     ; Load tile data to VRAM
     load_block_to_vram test_font_a_obj, $0000, $0020 ; 2 tiles, 2bpp = 32 bytes
+    load_block_to_vram font_charset, $0100, $0280 ; 40 tiles, 2bpp = 32 bytes
 
     jsr load_tile
 
@@ -144,6 +145,19 @@ setup_video:
     jsr register_screen_settings
 
     rts
+
+; Needs loaded tileset in VRAM at $0200 (40 chars in length)
+.macro putchar position, char_index
+    ldx #($0400 + position)  ; pos 3 (0, 3) in words from offset 0400
+    stx $2116
+    lda #char_index    ; char B
+    sta $2118
+.endmacro
+
+.macro putB position
+    putchar position, $22 
+.endmacro
+
 
 load_tile:
     ; The tile should already be in VRAM from the load_block_to_vram via DMA
@@ -164,13 +178,21 @@ load_tile:
     ;         in the load_block_to_vram (load_vram) macro.
 
     ; Expirement second tile
-    ldx #$0401 ; to vram address 0400 (1024 bc of tilemap addr increments)
+    ldx #$0401 ; to vram address 0401
     stx $2116
     ;lda #$01    
     lda #$01    
     sta $2118
-    lda #$C0 ; Flip V & H for fun
+    lda #$C0 ; Flip V & H for fun (Turn A)
     sta $2119
+
+    ; Load B from the second charset
+    ; ldx #$0402  ; pos 3 (0, 3) in words from offset 0400
+    ; stx $2116
+    ; lda #$22    ; char B
+    ; sta $2118
+    putB 2
+
 
     ; Expirement more tiles
     ldx #$040F  ; (pos 16)
@@ -212,6 +234,9 @@ register_screen_settings:
 
 test_font_a_obj:
 .incbin "imggen/a.pic"
+
+font_charset:
+.incbin "imggen/chars.pic"
 
 test_font_a_palette:
 .incbin "imggen/a.clr"
