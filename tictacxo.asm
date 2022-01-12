@@ -27,7 +27,6 @@
 
 .segment "ZEROPAGE"
 JoyInput: .res 2, $0000
-TileSelector: .res 1, $00
 ScrollBg1: .res 1, $00
 
 .segment "CODE"
@@ -69,31 +68,35 @@ VBlank:
     ; TODO: transfer renewed data via OAM
     ; TODO: change data settings for BG&OAM that renew picture
 
-    ;jsr scroll_the_screen
+    ; Constant Screen Scrolling
+    ;jsr scroll_the_screen_left
 
     jsr joycon_read
 
-    ; Check for A key
-    lda JoyInput
-    and #$80        ; check for A key 
-    beq endvblank   ; skip if no input (if zero)
-
-    ; Switch current tile
-    jsr switch_tile
-
+    lda JoyInput + 1       ; Check for keys in the high byte
+    check_left:
+        bit #>KEY_LEFT    ; check for key
+        beq check_right   ; if not set (is zero) we skip 
+        jsr scroll_the_screen_left
+        bra endvblank
+    check_right:
+        bit #>KEY_RIGHT
+        beq endvblank
+        jsr scroll_the_screen_right
+        bra endvblank
     endvblank: 
         rti 
 
 
 joycon_read:
-    lda $4212   ; auto-read joypad status
+    lda HVBJOY   ; auto-read joypad status
     and #$01    ; Check low bit to see if ready to be read.
     bne end_joycon_read
 
     rep #$30    ; A/X/Y - 16 bit
 
     ; read joycon data (registers 4218h ~ 421Fh)
-    lda $4218    ; Controller 1 as 16 bit.
+    lda JOY1L    ; Controller 1 as 16 bit.
     sta JoyInput
 
     sep #$20    ; Go back to A 8-bit
@@ -129,12 +132,20 @@ setup_video:
 
     rts
 
-scroll_the_screen:
+scroll_the_screen_left:
     lda ScrollBg1
     ina
-    sta ScrollBg1
+    sta ScrollBg1   ; increment and update the Scroll position
     sta BG1HOFS
-    stz BG1HOFS
+    stz BG1HOFS     ; Write the position to the BG
+    rts
+
+scroll_the_screen_right:
+    lda ScrollBg1
+    dea
+    sta ScrollBg1   ; increment and update the Scroll position
+    sta BG1HOFS
+    stz BG1HOFS     ; Write the position to the BG
     rts
 
 
@@ -175,17 +186,17 @@ load_tile:
     rts
 
 register_screen_settings:
-    stz $2105 ; mode 0 8x8 4 color 4bgs
+    stz BGMODE  ; mode 0 8x8 4 color 4bgs
 
-    lda #$04  ; Tile Map Location - set BG1 tile offset to $0400 (Word addr) (0800 in vram) with sc_size=00
-    sta $2107 ; BG1SC 
-    stz $210B ; BG1 name base address to $0000 (word addr)
+    lda #$04    ; Tile Map Location - set BG1 tile offset to $0400 (Word addr) (0800 in vram) with sc_size=00
+    sta BG1SC   ; BG1SC 
+    stz BG12NBA ; BG1 name base address to $0000 (word addr)
     lda #BG1_ON ; Enable BG1 as main screen.
-    sta $212C 
+    sta TM 
 
-    lda #$FF  ; Scroll down 1 pixel (FF really 03FF 63) (add -1 in 2s complement)
-    sta $210E
-    sta $210E ; Set V offset Low, High, to FFFF for BG1
+    lda #$FF    ; Scroll down 1 pixel (FF really 03FF 63) (add -1 in 2s complement)
+    sta BG1VOFS
+    sta BG1VOFS ; Set V offset Low, High, to FFFF for BG1
     rts
 
 .segment "RODATA"

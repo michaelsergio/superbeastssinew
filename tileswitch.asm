@@ -1,3 +1,6 @@
+.segment "ZEROPAGE"
+TileSelector: .res 1, $00
+
 .code 
 switch_tile:
     ldx #$0400          ; Base address of VRAM
