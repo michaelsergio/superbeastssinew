@@ -6,6 +6,7 @@
 .segment "ZEROPAGE"
 JoyInput: .res 2, $0000
 TileSelector: .res 1, $00
+ScrollBG1: .res 1, $00
 
 .define ROM_NAME "TICTACXO"
 .include "lorom128.inc"
@@ -50,6 +51,7 @@ Reset:
     ldx #$00
     stx JoyInput
     stz TileSelector
+    stz ScrollBG1
 
 
     game_loop:
@@ -69,6 +71,8 @@ VBlank:
     ; TODO: set data changed registers and memory
     ; TODO: transfer renewed data via OAM
     ; TODO: change data settings for BG&OAM that renew picture
+
+    jsr scroll_the_screen
 
     jsr joycon_read
 
@@ -146,6 +150,14 @@ setup_video:
 
     rts
 
+scroll_the_screen:
+    lda ScrollBG1
+    ina
+    sta ScrollBG1
+    sta $210D
+    stz $210D
+    rts
+
 ; Needs loaded tileset in VRAM at $0200 (40 chars in length)
 .macro putchar position, char_index
     ldx #($0400 + position)  ; pos x+y*32 (x, y) in words from offset 0400
@@ -161,7 +173,6 @@ setup_video:
 .macro putB position
     putchar position, $22 
 .endmacro
-
 
 load_tile:
     ; The tile should already be in VRAM from the load_block_to_vram via DMA
