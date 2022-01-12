@@ -83,23 +83,6 @@ VBlank:
     endvblank: 
         rti 
 
-switch_tile:
-    ldx #$0400 
-    lda TileSelector
-    tax
-    stx $2116   ; Old tile
-    stz $2118   ; Clear it
-
-    inc         ; store next tile
-    sta TileSelector
-    tax
-    stx $2116   ; Next tile addr
-    lda #$01    ; set to tile name 1
-    sta $2118
-    lda #$C0 ; Flip V & H for fun
-    sta $2119
-
-    rts
 
 joycon_read:
     lda $4212   ; auto-read joypad status
