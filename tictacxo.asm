@@ -17,6 +17,8 @@ dpTmp4: .res 1, $00
 dpTmp5: .res 1, $00
 wJoyInput: .res 2, $0000
 bScrollBg1: .res 1, $00
+bSpritePosX: .res 1, $00
+bSpritePosY: .res 1, $00
 
 .code
 ; Follow set up in chapter 23 of manual
@@ -60,17 +62,55 @@ VBlank:
 
     jsr joycon_read
 
+
+    lda wJoyInput
+    ; This has L and R
+    check_L:
+        bit #<KEY_L
+        beq check_R             ; if not set (is zero) we skip 
+        jsr scroll_the_screen_left
+        bra endjoycheck
+    check_R:
+        bit #<KEY_R
+        beq check_low             ; if not set (is zero) we skip 
+        jsr scroll_the_screen_right
+        bra endjoycheck
+
+    check_low: 
     lda wJoyInput + 1               ; Check for keys in the high byte
+
     check_left:
         bit #>KEY_LEFT              ; check for key
-        beq check_right             ; if not set (is zero) we skip 
-        jsr scroll_the_screen_left
-        bra endvblank
+        beq check_up                ; if not set (is zero) we skip 
+        jsr move_sprite_left
+        bra endjoycheck
+    check_up:
+        bit #>KEY_UP
+        beq check_down
+        jsr move_sprite_up
+        bra endjoycheck
+    check_down:
+        bit #>KEY_DOWN
+        beq check_right
+        jsr move_sprite_down
+        bra endjoycheck
     check_right:
         bit #>KEY_RIGHT
-        beq endvblank
-        jsr scroll_the_screen_right
-        bra endvblank
+        beq endjoycheck
+        jsr move_sprite_right
+        bra endjoycheck
+    endjoycheck:
+
+    ; update the sprite (0000) position
+    lda #$00
+    sta OAMADDL     
+    lda #$00
+    sta OAMADDH     ; write to oam slot 0000
+    lda bSpritePosX ; OBJ H pos
+    sta OAMDATA
+    lda bSpritePosY ; OBJ V pos
+    sta OAMDATA
+
     endvblank: 
         rti 
 
@@ -91,6 +131,26 @@ joycon_read:
     end_joycon_read:
     rts
 
+move_sprite_left:
+    lda bSpritePosX
+    dea
+    sta bSpritePosX
+    rts
+move_sprite_right:
+    lda bSpritePosX
+    ina
+    sta bSpritePosX
+    rts
+move_sprite_up:
+    lda bSpritePosY
+    dea
+    sta bSpritePosY
+    rts
+move_sprite_down:
+    lda bSpritePosY
+    ina
+    sta bSpritePosY
+    rts
 
 load_custom_palette:
     ; force a palette here
@@ -177,18 +237,23 @@ setup_video:
     rts
 
 oam_load:
+    ; Set an initial position for sprite
+    lda #$0F 
+    sta bSpritePosX
+    sta bSpritePosY
+
     lda #%00000000  ;sssnnbbb b=base_sel_bits n=name_selection s=size_from_table
     sta OBSEL
 
     ; Sprite Table 1 at OAM $00
     lda #$00
-    sta OAMADDL     ; write to oam slot 0
+    sta OAMADDL     
     lda #$00
-    sta OAMADDH     ; write to oam slot 0
+    sta OAMADDH     ; write to oam slot 0000
 
-    lda #$0F         ; OBJ H pos
+    lda bSpritePosX ; OBJ H pos
     sta OAMDATA
-    lda #$0F         ; OBJ V pos
+    lda bSpritePosY ; OBJ V pos
     sta OAMDATA
     lda #$70         ; Name - Face at location $E0 or $0E00
     sta OAMDATA
