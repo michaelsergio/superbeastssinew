@@ -8,12 +8,17 @@
 .include "tileswitch.asm"
 
 
-.segment "ZEROPAGE"
+.zeropage
+dpTmp0 .res 1, $00
+dpTmp1 .res 1, $00
+dpTmp2 .res 1, $00
+dpTmp3 .res 1, $00
+dpTmp4 .res 1, $00
+dpTmp5 .res 1, $00
 JoyInput: .res 2, $0000
 ScrollBg1: .res 1, $00
 
-.segment "CODE"
-
+.code
 ; Follow set up in chapter 23 of manual
 Reset:
     ; Not in manual but part of common cpu setup
@@ -87,6 +92,43 @@ joycon_read:
     rts
 
 
+load_custom_palette:
+    ; force a palette here
+    lda #$80        ; according to A-15 in OBJ palettes in mode 0
+    sta CGADD
+
+    lda #%00000000 ; Blue
+    sta CGDATA
+    lda #%01111100
+    sta CGDATA
+
+    lda #%11100000
+    sta CGDATA
+    lda #%00000011 ; Green
+    sta CGDATA
+
+    lda #%00011111
+    sta CGDATA
+    lda #%00000000 ; Red
+    sta CGDATA
+
+    stz CGDATA
+    stz CGDATA
+
+
+    stz CGDATA
+    stz CGDATA
+    stz CGDATA
+    stz CGDATA
+    stz CGDATA
+    stz CGDATA
+    stz CGDATA
+    stz CGDATA
+
+
+
+    rts
+
 setup_video:
     ; Main register settings
     ; Mode 0 is OK for now
@@ -95,8 +137,20 @@ setup_video:
     ; We're going to DMA the graphics instead of using 2121/2122
     load_palette test_font_a_palette, 0, 4
 
+    ;custom_palette
+    jsr load_custom_palette
 
-    ; TODO: Transfer OAM, CGRAM Data via DMA (2 channels)
+
+    ; force Black BG by setting first color in first palette to black
+    ; force_black_bg:
+    ;     stz CGADD
+    ;     stz CGDATA
+    ;     stz CGDATA
+    force_white_bg:
+        stz CGADD
+        lda #$FF
+        sta CGDATA
+        sta CGDATA
 
     ; Set VRAM Settings
     ; Transfer VRAM Data via DMA
@@ -109,8 +163,43 @@ setup_video:
 
     ; TODO: Loop VRAM until OBJ, BG CHR, BG SC Data has been transfered
 
+    ; TODO: Transfer OAM, CGRAM Data via DMA (2 channels)
+    jsr oam_load
+
+
     ; Register initial screen settings
     jsr register_screen_settings
+
+    rts
+
+oam_load:
+    lda #%00000000  ;sssnnbbb b=base_sel_bits n=name_selection s=size_from_table
+    sta OBSEL
+
+    ; Sprite Table 1 at OAM $00
+    lda #$00
+    sta OAMADDL     ; write to oam slot 0
+    lda #$00
+    sta OAMADDH     ; write to oam slot 0
+
+    lda #$0F         ; OBJ H pos
+    sta OAMDATA
+    lda #$0F         ; OBJ V pos
+    sta OAMDATA
+    lda #$21         ; Name (Letter I)
+    sta OAMDATA
+    lda #%11110000
+    sta OAMDATA     ; Flip/Pri/ColorPalette
+
+    ; Sprite Table 2 at OAM $0100
+    lda #$00
+    sta OAMADDL     
+    lda #$01
+    sta OAMADDH     ; write to oam slot 256 ($100)
+    ; We want Obj 0 to be small and not use H MSB
+    stz OAMDATA
+    stz OAMDATA
+
 
     rts
 
@@ -173,8 +262,10 @@ register_screen_settings:
     lda #$04    ; Tile Map Location - set BG1 tile offset to $0400 (Word addr) (0800 in vram) with sc_size=00
     sta BG1SC   ; BG1SC 
     stz BG12NBA ; BG1 name base address to $0000 (word addr)
-    lda #BG1_ON ; Enable BG1 as main screen.
-    sta TM 
+    lda #(BG1_ON | SPR_ON) ; Enable BG1 and Sprites as main screen.
+    ;lda #BG1_ON ; Enable BG1 on The Main screen
+    ;lda #SPR_ON ; Enable Sprites on The Main screen.
+    sta TM
 
     lda #$FF    ; Scroll down 1 pixel (FF really 03FF 63) (add -1 in 2s complement)
     sta BG1VOFS
@@ -184,6 +275,8 @@ register_screen_settings:
 
 .segment "RODATA"
 
+; Turns out sprite MUST be 4bpp
+; 2bpp will make a mess of everything as it does now
 test_font_a_obj:
 .incbin "imggen/a.pic"
 
