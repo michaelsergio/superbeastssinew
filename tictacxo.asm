@@ -158,8 +158,10 @@ setup_video:
     ; Transfer VRAM Data via DMA
 
     ; Load tile data to VRAM
-    load_block_to_vram test_font_a_obj, $0000, $0020 ; 2 tiles, 2bpp = 32 bytes
-    load_block_to_vram font_charset, $0100, $0280 ; 40 tiles, 2bpp = 32 bytes
+    load_block_to_vram test_font_a_obj, $0000, $0020 ; 2 tiles, 2bpp * 8x8 / 8bits = 32 bytes
+    load_block_to_vram font_charset, $0100, 640 ; 40 tiles, 2bpp * 8x8 / 8 bits= 
+    load_block_to_vram tiles_basic_set, $0280, 128 ; 8 tiles, 2bpp * 8x8 / 8 bits = 128
+    load_block_to_vram tiles_hangman, $0700, 256 ; 2 tiles, 4bpp * 16x16 / 8 bits = 256 bytes
 
     jsr load_tile
 
@@ -188,10 +190,10 @@ oam_load:
     sta OAMDATA
     lda #$0F         ; OBJ V pos
     sta OAMDATA
-    lda #$21         ; Name (Letter I)
+    lda #$70         ; Name - Face at location $E0 or $0E00
     sta OAMDATA
-    lda #%11110000
-    sta OAMDATA     ; Flip/Pri/ColorPalette
+    lda #%00110010  ; Load palette 1
+    sta OAMDATA     ; HBFlip/Pri/ColorPalette/9name
 
     ; Sprite Table 2 at OAM $0100
     lda #$00
@@ -289,7 +291,7 @@ test_font_a_palette:
 .incbin "imggen/a.clr"
 
 tiles_hangman:
-.incbin "spritesgen/hangman.clr"
+.incbin "spritesgen/hangman.pic"
 palette_hangman:
 .incbin "spritesgen/hangman.clr"
 

@@ -40,8 +40,9 @@ imggen/%.clr imggen/%.pic: $(ASSETS)
 	mv imgraw/$*.pic imggen/$*.pic
 
 # Generate the image assets 
+# These sprites are size 16x16  with 16 colors (4bpp) 
 spritesgen/%.clr spritesgen/%.pic: $(SPRITES)
-	$(TOOLS)/$(PCX2SNES) -n -s8 -c16 -o16 sprites/$*
+	$(TOOLS)/$(PCX2SNES) -n -s16 -c16 -o16 sprites/$*
 	mv sprites/$*.clr spritesgen/$*.clr
 	mv sprites/$*.pic spritesgen/$*.pic
 
