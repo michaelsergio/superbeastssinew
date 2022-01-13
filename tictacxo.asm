@@ -60,10 +60,10 @@ VBlank:
 
     jsr joycon_read
 
-    lda wJoyInput + 1       ; Check for keys in the high byte
+    lda wJoyInput + 1               ; Check for keys in the high byte
     check_left:
-        bit #>KEY_LEFT    ; check for key
-        beq check_right   ; if not set (is zero) we skip 
+        bit #>KEY_LEFT              ; check for key
+        beq check_right             ; if not set (is zero) we skip 
         jsr scroll_the_screen_left
         bra endvblank
     check_right:
