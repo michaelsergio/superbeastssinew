@@ -150,42 +150,6 @@ move_sprite_down:
     sta bSpritePosY
     rts
 
-load_custom_palette:
-    ; force a palette here
-    lda #$80        ; according to A-15 in OBJ palettes in mode 0
-    sta CGADD
-
-    lda #%00000000 ; Blue
-    sta CGDATA
-    lda #%01111100
-    sta CGDATA
-
-    lda #%11100000
-    sta CGDATA
-    lda #%00000011 ; Green
-    sta CGDATA
-
-    lda #%00011111
-    sta CGDATA
-    lda #%00000000 ; Red
-    sta CGDATA
-
-    stz CGDATA
-    stz CGDATA
-
-
-    stz CGDATA
-    stz CGDATA
-    stz CGDATA
-    stz CGDATA
-    stz CGDATA
-    stz CGDATA
-    stz CGDATA
-    stz CGDATA
-
-
-
-    rts
 
 setup_video:
     ; Main register settings
@@ -199,7 +163,6 @@ setup_video:
 
     ;custom_palette
     jsr load_custom_palette
-
 
     ; force Black BG by setting first color in first palette to black
     ; force_black_bg:

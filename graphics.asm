@@ -77,4 +77,37 @@ dma_palette:
     plb
     rts
 
+load_custom_palette:
+    ; force a palette here
+    lda #$80        ; according to A-15 in OBJ palettes in mode 0
+    sta CGADD
 
+    lda #$FF       ; White
+    sta CGDATA
+    sta CGDATA
+
+    lda #%00000000 ; Blue
+    sta CGDATA
+    lda #%01111100
+    sta CGDATA
+
+    lda #%11100000
+    sta CGDATA
+    lda #%00000011 ; Green
+    sta CGDATA
+
+    lda #%00011111
+    sta CGDATA
+    lda #%00000000 ; Red
+    sta CGDATA
+
+    stz CGDATA
+    stz CGDATA
+    stz CGDATA
+    stz CGDATA
+    stz CGDATA
+    stz CGDATA
+    stz CGDATA
+    stz CGDATA
+
+    rts
