@@ -15,8 +15,8 @@ dpTmp2: .res 1, $00
 dpTmp3: .res 1, $00
 dpTmp4: .res 1, $00
 dpTmp5: .res 1, $00
-JoyInput: .res 2, $0000
-ScrollBg1: .res 1, $00
+wJoyInput: .res 2, $0000
+bScrollBg1: .res 1, $00
 
 .code
 ; Follow set up in chapter 23 of manual
@@ -60,7 +60,7 @@ VBlank:
 
     jsr joycon_read
 
-    lda JoyInput + 1       ; Check for keys in the high byte
+    lda wJoyInput + 1       ; Check for keys in the high byte
     check_left:
         bit #>KEY_LEFT    ; check for key
         beq check_right   ; if not set (is zero) we skip 
@@ -84,7 +84,7 @@ joycon_read:
 
     ; read joycon data (registers 4218h ~ 421Fh)
     lda JOY1L    ; Controller 1 as 16 bit.
-    sta JoyInput
+    sta wJoyInput
 
     sep #$20    ; Go back to A 8-bit
 
@@ -204,17 +204,17 @@ oam_load:
     rts
 
 scroll_the_screen_left:
-    lda ScrollBg1
+    lda bScrollBg1
     ina
-    sta ScrollBg1   ; increment and update the Scroll position
+    sta bScrollBg1   ; increment and update the Scroll position
     sta BG1HOFS
     stz BG1HOFS     ; Write the position to the BG
     rts
 
 scroll_the_screen_right:
-    lda ScrollBg1
+    lda bScrollBg1
     dea
-    sta ScrollBg1   ; increment and update the Scroll position
+    sta bScrollBg1   ; increment and update the Scroll position
     sta BG1HOFS
     stz BG1HOFS     ; Write the position to the BG
     rts
