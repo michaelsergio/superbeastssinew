@@ -136,6 +136,8 @@ setup_video:
     ; Set OAM, CGRAM Settings
     ; We're going to DMA the graphics instead of using 2121/2122
     load_palette test_font_a_palette, 0, 4
+    load_palette palette_basic_set, $10, 4
+    load_palette palette_hangman, $90, $10
 
     ;custom_palette
     jsr load_custom_palette
@@ -285,6 +287,16 @@ font_charset:
 
 test_font_a_palette:
 .incbin "imggen/a.clr"
+
+tiles_hangman:
+.incbin "spritesgen/hangman.clr"
+palette_hangman:
+.incbin "spritesgen/hangman.clr"
+
+tiles_basic_set:
+.incbin "imggen/basic_tileset.pic"
+palette_basic_set:
+.incbin "imggen/basic_tileset.clr"
 
 ObjFontA:
     .byte  $00, $00, $00, $00
