@@ -54,8 +54,4 @@ clean: assetclean
 CPU_SYM:=$(BIN_DIR)/$(PROGRAM).cpu.sym
 .PHONY: debuglabels
 debuglabels: 
-	$(shell echo '#SNES65816\n\n' > $(CPU_SYM))
-	$(shell echo '[SYMBOL]' >> $(CPU_SYM))
-	$(shell awk '{print tolower(substr($$2, 0, 2)) ":" tolower(substr($$2, 3)), $$3, "ANY", 1}' $(BIN_DIR)/$(PROGRAM).lbl >> $(CPU_SYM))
-	$(shell echo '\n[COMMENT]' >> $(CPU_SYM))
-	$(shell echo '\n[COMMAND]' >> $(CPU_SYM))
+	$(shell scripts/create_debug_labels.sh $(BIN_DIR)/$(PROGRAM).lbl > $(CPU_SYM))
