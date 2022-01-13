@@ -63,42 +63,40 @@ VBlank:
     jsr joycon_read
 
 
-    lda wJoyInput
     ; This has L and R
     check_L:
+        lda wJoyInput
         bit #<KEY_L
-        beq check_R             ; if not set (is zero) we skip 
+        beq check_R                 ; if not set (is zero) we skip 
         jsr scroll_the_screen_left
-        bra endjoycheck
     check_R:
+        lda wJoyInput
         bit #<KEY_R
-        beq check_low             ; if not set (is zero) we skip 
+        beq check_left              ; if not set (is zero) we skip 
         jsr scroll_the_screen_right
-        bra endjoycheck
 
-    check_low: 
-    lda wJoyInput + 1               ; Check for keys in the high byte
-
+    ; Check for keys in the high byte
     check_left:
+        lda wJoyInput + 1               
         bit #>KEY_LEFT              ; check for key
         beq check_up                ; if not set (is zero) we skip 
         jsr move_sprite_left
-        bra endjoycheck
     check_up:
+        lda wJoyInput + 1               
         bit #>KEY_UP
         beq check_down
         jsr move_sprite_up
-        bra endjoycheck
     check_down:
+        lda wJoyInput + 1               
         bit #>KEY_DOWN
         beq check_right
         jsr move_sprite_down
-        bra endjoycheck
     check_right:
+        lda wJoyInput + 1               
         bit #>KEY_RIGHT
         beq endjoycheck
         jsr move_sprite_right
-        bra endjoycheck
+
     endjoycheck:
 
     ; update the sprite (0000) position
