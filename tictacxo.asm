@@ -9,12 +9,12 @@
 
 
 .zeropage
-dpTmp0 .res 1, $00
-dpTmp1 .res 1, $00
-dpTmp2 .res 1, $00
-dpTmp3 .res 1, $00
-dpTmp4 .res 1, $00
-dpTmp5 .res 1, $00
+dpTmp0: .res 1, $00
+dpTmp1: .res 1, $00
+dpTmp2: .res 1, $00
+dpTmp3: .res 1, $00
+dpTmp4: .res 1, $00
+dpTmp5: .res 1, $00
 JoyInput: .res 2, $0000
 ScrollBg1: .res 1, $00
 
