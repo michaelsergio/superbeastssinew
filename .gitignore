@@ -1,4 +1,5 @@
 imggen/*
+spritesgen/*
 *.o
 *.smc
 *.sym

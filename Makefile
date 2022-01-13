@@ -16,6 +16,10 @@ ASSETS_PIC_OUT := $(patsubst imgraw/%, imggen/%, $(patsubst %.pcx, %.pic, $(ASSE
 ASSETS_CLR_OUT := $(patsubst imgraw/%, imggen/%, $(patsubst %.pcx, %.clr, $(ASSETS)))
 ASSETS_OUT := $(ASSETS_PIC_OUT) $(ASSETS_CLR_OUT)
 
+SPRITES:=$(wildcard sprites/*.pcx)
+SPRITES_PIC_OUT := $(patsubst sprites/%, spritesgen/%, $(patsubst %.pcx, %.pic, $(SPRITES)))
+SPRITES_CLR_OUT := $(patsubst sprites/%, spritesgen/%, $(patsubst %.pcx, %.clr, $(SPRITES)))
+SPRITES_OUT := $(SPRITES_PIC_OUT) $(SPRITES_CLR_OUT)
 
 all: build $(EXECUTABLE) debuglabels
 
@@ -26,7 +30,7 @@ $(EXECUTABLE): $(OUTPUTS_BIN)
 $(BIN_DIR)/%.o: %.asm
 	ca65 -g $^ -o $@
 
-build: $(ASSETS_OUT)
+build: $(ASSETS_OUT) $(SPRITES_OUT)
 	@mkdir -p $(BIN_DIR)
 
 # Generate the image assets 
@@ -35,19 +39,29 @@ imggen/%.clr imggen/%.pic: $(ASSETS)
 	mv imgraw/$*.clr imggen/$*.clr
 	mv imgraw/$*.pic imggen/$*.pic
 
+# Generate the image assets 
+spritesgen/%.clr spritesgen/%.pic: $(SPRITES)
+	$(TOOLS)/$(PCX2SNES) -n -s8 -c16 -o16 sprites/$*
+	mv sprites/$*.clr spritesgen/$*.clr
+	mv sprites/$*.pic spritesgen/$*.pic
+
+
 # generate assets
 .PHONY: assetgen
-assetgen: $(ASSETS_OUT)
+assetgen: $(ASSETS_OUT) $(SPRITES_OUT)
 	#$(info VAR="$(ASSETS_OUT)")
 
 # clean up the assets
 .PHONY: assetclean
 assetclean:
-	rm -f imggen/*.clr imggen/*.pic
+	rm -f imggen/*.clr imggen/*.pic 
+
+spritesclean:
+	rm -f spritesgen/*
 
 # Just the code output cleanup
 .PHONY: clean
-clean: assetclean
+clean: assetclean spritesclean
 	rm -f *.smc *.o *.lbl *.map *.sym $(BIN_DIR)/*
 
 
