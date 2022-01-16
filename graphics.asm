@@ -77,9 +77,46 @@ dma_palette:
     plb
     rts
 
+; Zeros all the sprites. 
+; Sets all the sprites offscreen.
+; Note: Instead of this, should probably DMA from an OAM mirror in WRAM
+reset_sprite_table:
+
+    lda #%00000000  ;sssnnbbb b=base_sel_bits n=name_selection s=size_from_table
+    sta OBSEL
+
+    ; Sprite Table 1 at OAM $00
+    stz OAMADDL     
+    stz OAMADDH     ; write to oam slot 0000 - will autoinc after L/H write
+
+    ldx $FF         ; Loop over all 255 positions
+    lda $E0         ; 224 ; set the position of every sprite to (-32, 224) 
+    @loop_write_pos_name:
+    sta OAMDATA     ; x pos: 32 is -224 so set 9th bit in the 2nd table
+    sta OAMDATA     ; y pos: 224 is one below the visible screen
+    stz OAMDATA     ; Name: Doesnt matter 
+    stz OAMDATA     ; HBFlip/Pri/ColorPalette/9name
+    dex
+    bne @loop_write_pos_name    ; do writes until 0
+
+    ; Write all the negative positions in Table 2
+    stz OAMADDL
+    lda #$01     
+    sta OAMADDH ; Sprite Table 2 at OAM $0100 - will autoinc after L/H write
+    
+    lda $55     ; set the 9th bit (h-pos) bit for each spot in the OAM table
+    ldx $000F   ; Do this 15 times. From 100..10F
+    @write_next_sprite_pos:
+        sta OAMDATA
+        sta OAMDATA
+        dex
+    bne @write_next_sprite_pos  ; do writes until 0
+
+    rts
+
 load_custom_palette:
     ; force a palette here
-    lda #$80        ; according to A-15 in OBJ palettes in mode 0
+    lda #$80        ; according to A-17 in OBJ palettes in mode 0
     sta CGADD
 
     lda #$FF       ; White

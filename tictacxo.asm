@@ -6,6 +6,7 @@
 .include "graphics.asm"
 .include "chars.asm"
 .include "tileswitch.asm"
+.include "basic_tile_level.asm"
 
 
 .zeropage
@@ -179,25 +180,43 @@ setup_video:
     ; Transfer VRAM Data via DMA
 
     ; Load tile data to VRAM
-    load_block_to_vram test_font_a_obj, $0000, $0020 ; 2 tiles, 2bpp * 8x8 / 8bits = 32 bytes
-    load_block_to_vram font_charset, $0100, 640 ; 40 tiles, 2bpp * 8x8 / 8 bits= 
+    ;jsr reset_tiles
+    ;load_block_to_vram test_font_a_obj, $0000, $0020 ; 2 tiles, 2bpp * 8x8 / 8bits = 32 bytes
+    ;load_block_to_vram font_charset, $0100, 640 ; 40 tiles, 2bpp * 8x8 / 8 bits= 
     load_block_to_vram tiles_basic_set, $0280, 128 ; 8 tiles, 2bpp * 8x8 / 8 bits = 128
     load_block_to_vram tiles_hangman, $0700, 256 ; 2 tiles, 4bpp * 16x16 / 8 bits = 256 bytes
 
-    jsr load_tile
 
     ; TODO: Loop VRAM until OBJ, BG CHR, BG SC Data has been transfered
 
-    ; TODO: Transfer OAM, CGRAM Data via DMA (2 channels)
-    jsr oam_load
+    ;jsr load_bg_tiles
+    jsr load_simple_tilemap_level_1
 
+    ; TODO: Transfer OAM, CGRAM Data via DMA (2 channels)
+    jsr reset_sprite_table
+    jsr oam_load_man
 
     ; Register initial screen settings
     jsr register_screen_settings
 
     rts
 
-oam_load:
+; TODO WIP
+; Zero the tile map in BG1
+; reset_tiles:
+;     lda #V_INC_1
+;     sta VMAIN       ; Autoinc 1 at a time after 16 bit write.
+
+;     ldx #$0400      ; TileMap Address
+;     stx VMADDL
+
+;     stz VMADDL
+;     stz VMADDH
+
+;     rts
+
+
+oam_load_man:
     ; Set an initial position for sprite
     lda #$0F 
     sta bSpritePosX
@@ -218,7 +237,7 @@ oam_load:
     sta OAMDATA
     lda #$70         ; Name - Face at location $E0 or $0E00
     sta OAMDATA
-    lda #%00110010  ; Load palette 1
+    lda #%00110010  ; Highest priority / palette 1 
     sta OAMDATA     ; HBFlip/Pri/ColorPalette/9name
 
     ; Sprite Table 2 at OAM $0100
@@ -233,6 +252,7 @@ oam_load:
 
     rts
 
+; The two should really set a mBG1HOFS mirror, then have that be applied in the vblank
 scroll_the_screen_left:
     lda bScrollBg1
     ina
@@ -240,7 +260,6 @@ scroll_the_screen_left:
     sta BG1HOFS
     stz BG1HOFS     ; Write the position to the BG
     rts
-
 scroll_the_screen_right:
     lda bScrollBg1
     dea
@@ -250,7 +269,19 @@ scroll_the_screen_right:
     rts
 
 
-load_tile:
+load_bg_tiles:
+    ;jsr load_simple_tiles
+    ; Expirement with more tiles
+
+    ;load_chars_to_screen
+    ;load_chars_in_corner
+    ;write_charset_with_autoinc
+    ;print_hello_world
+
+    rts
+
+load_simple_tiles:
+    ; Write 'A' to the top left corner
     ; The tile should already be in VRAM from the load_block_to_vram via DMA
     ; There are two tile (empty at 0000 and A at 0010).
     ; Now load data into the tile map 
@@ -271,27 +302,22 @@ load_tile:
     ; Expirement second tile
     ldx #$0401 ; to vram address 0401
     stx VMAIN
-    ;lda #$01    
     lda #$01    
     sta VMDATAL
     lda #$C0 ; Flip V & H for fun (Turn A)
     sta VMDATAH
 
-
-    load_chars_to_screen
-    ; Expirement more tiles
-    load_chars_in_corner
-    write_charset_with_autoinc
-    print_hello_world
-
     rts
 
 register_screen_settings:
-    stz BGMODE  ; mode 0 8x8 4 color 4bgs
+    stz BGMODE  ; mode 0 8x8 4-color 4-bgs
 
     lda #$04    ; Tile Map Location - set BG1 tile offset to $0400 (Word addr) (0800 in vram) with sc_size=00
     sta BG1SC   ; BG1SC 
-    stz BG12NBA ; BG1 name base address to $0000 (word addr)
+
+    lda #$00
+    sta BG12NBA ; BG1 name base address to $0000 (word addr) (Tiles offset)
+
     lda #(BG1_ON | SPR_ON) ; Enable BG1 and Sprites as main screen.
     ;lda #BG1_ON ; Enable BG1 on The Main screen
     ;lda #SPR_ON ; Enable Sprites on The Main screen.

@@ -6,29 +6,39 @@
 .macro putchar position, char_index
     ldx #($0400 + position)  ; pos x+y*32 (x, y) in words from offset 0400
     stx VMADDL
-    lda #char_index    ; char B
+    lda #char_index    ; Index from start of tilemap
     sta VMDATAL
+    stz VMDATAH
 .endmacro
 
-.macro put_alpha letter, posx, posy
-    putchar (posx + posy * 32), ((letter - 65 + 1) + $20) 
+.macro put_alpha letter, posx, posy, tile_start
+    putchar (posx + posy * 32), ((letter - 65 + 1) + tile_start) ; +1 bc space char in my set
 .endmacro
 
+; Load B from the second charset
+; Assumes alpha set is loaded at $20 (0200 in VRAM)
 .macro putB position
-    putchar position, $22 
+    putchar position, $22
 .endmacro
 
+; Assumes alpha set is loaded at $20 (0200 in VRAM)
 .macro load_chars_to_screen
-    ; Load B from the second charset
-    ; ldx #$0402  ; pos 3 (0, 3) in words from offset 0400
-    ; stx VMADDL
-    ; lda #$22    ; char B
-    ; sta VMDATAL
     putB 2
-    put_alpha 'C', 3, 0
-    put_alpha 'Q', 4, 1
+    put_alpha 'C', 3, 0, $20
+    put_alpha 'Q', 4, 1, $20
 .endmacro
 
+
+.macro write_charset_with_autoinc_2
+    ; starts at $20 goes for 40 chars
+    lda #V_INC_1
+    sta VMAIN       ; autoinc 1
+
+    ; Start writing from word 0200
+
+    ; TODO FINISH this
+
+.endmacro
 
 .macro write_charset_with_autoinc
     ; Try and write the whole charset using auto increment
