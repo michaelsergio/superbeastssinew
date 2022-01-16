@@ -1,19 +1,17 @@
 .code
 
-; Assumes Tile Data is loaded at $280 or $28 in VRAM
+; Assumes Tile Data is loaded at $500 or $50 in VRAM
 ; Loads 4 tiles per row
 load_simple_tilemap_level_1:
 
     lda #V_INC_1
     sta VMAIN        ; Single Inc
  
-    ldx #$0400
-    ;ldx #($0400 + $0 + $0 * $20) ; screen position 0 TODO: change later
+    ldx #$0400      ;#($0400 + $0 + $0 * $20) ; screen position 0 
     stx VMADDL
 
-    ; Set an index for the x
-    ldx #$08
-    ldy #$1050      ; 04 for color palette 1, number 50 for basic tile set
+    ldx #$08        ; Loop 8 x 4 times (unrolled)
+    ldy #$1050      ; 10 for color palette 4, number 50 for basic tile set
     @do_row:
         jsr fill_row_with_tiles
         jsr fill_row_with_tiles
