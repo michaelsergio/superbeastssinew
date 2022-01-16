@@ -41,27 +41,15 @@ Reset:
     sta NMITIMEN
 
     game_loop:
+        jsr joy_update
         wai ; Wait for NMI
 
         ; TODO: Gen data of register to be renewed & mem to change BG & OBJ data
         ; aka Update
         ; react to input
-    jmp game_loop
+jmp game_loop
 
-VBlank:
-    ; Detect Beginning of VBlank (Appendix B-3)        
-    lda RDNMI; Read NMI flag
-    bpl endvblank ; loop if the MSB is 0 N=0  (positive number)
-
-    ; TODO: set data changed registers and memory
-    ; TODO: transfer renewed data via OAM
-    ; TODO: change data settings for BG&OAM that renew picture
-
-    ; Constant Screen Scrolling
-    jsr scroll_the_screen_left
-    jsr joycon_read
-
-
+joy_update:
     ; This has L and R
     check_L:
         lda wJoyInput
@@ -98,6 +86,27 @@ VBlank:
 
     endjoycheck:
 
+rts
+
+VBlank:
+    ; Detect Beginning of VBlank (Appendix B-3)        
+    lda RDNMI; Read NMI flag
+    bpl endvblank ; loop if the MSB is 0 N=0  (positive number)
+
+    ; TODO: set data changed registers and memory
+    ; TODO: transfer renewed data via OAM
+    ; TODO: change data settings for BG&OAM that renew picture
+
+    ; Constant Screen Scrolling
+    jsr scroll_the_screen_left
+    ; Update the screen scroll register
+    lda mBG1HOFS
+    sta BG1HOFS
+    stz BG1HOFS     ; Write the position to the BG
+
+    jsr joycon_read
+
+
     ; update the sprite (0000) position
     lda #$00
     sta OAMADDL     
@@ -108,9 +117,6 @@ VBlank:
     lda bSpritePosY ; OBJ V pos
     sta OAMDATA
     
-    lda mBG1HOFS
-    sta BG1HOFS
-    stz BG1HOFS     ; Write the position to the BG
 
     endvblank: 
 rti 
@@ -152,7 +158,6 @@ move_sprite_down:
     ina
     sta bSpritePosY
 rts
-
 
 setup_video:
     ; Main register settings
