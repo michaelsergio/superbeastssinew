@@ -89,14 +89,14 @@ reset_sprite_table:
     stz OAMADDL     
     stz OAMADDH     ; write to oam slot 0000 - will autoinc after L/H write
 
-    ldx $FF         ; Loop over all 255 positions
+    ldx $7F         ; Loop over all 127 sprite objects
     lda $E0         ; 224 ; set the position of every sprite to (-32, 224) 
     @loop_write_pos_name:
-    sta OAMDATA     ; x pos: 32 is -224 so set 9th bit in the 2nd table
-    sta OAMDATA     ; y pos: 224 is one below the visible screen
-    stz OAMDATA     ; Name: Doesnt matter 
-    stz OAMDATA     ; HBFlip/Pri/ColorPalette/9name
-    dex
+        sta OAMDATA     ; x pos: 32 is -224 so set 9th bit in the 2nd table
+        sta OAMDATA     ; y pos: 224 is one below the visible screen
+        stz OAMDATA     ; Name: Doesnt matter 
+        stz OAMDATA     ; HBFlip/Pri/ColorPalette/9name
+        dex
     bne @loop_write_pos_name    ; do writes until 0
 
     ; Write all the negative positions in Table 2
