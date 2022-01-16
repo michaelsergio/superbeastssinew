@@ -189,21 +189,6 @@ setup_video:
     jsr register_screen_settings
 rts
 
-; TODO WIP
-; Zero the tile map in BG1
-; reset_tiles:
-;     lda #V_INC_1
-;     sta VMAIN       ; Autoinc 1 at a time after 16 bit write.
-
-;     ldx #$0400      ; TileMap Address
-;     stx VMADDL
-
-;     stz VMADDL
-;     stz VMADDH
-
-;     rts
-
-
 oam_load_man:
     ; Set an initial position for sprite
     lda #$0F 
