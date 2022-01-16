@@ -184,7 +184,8 @@ setup_video:
     ;load_block_to_vram test_font_a_obj, $0000, $0020 ; 2 tiles, 2bpp * 8x8 / 8bits = 32 bytes
     ;load_block_to_vram font_charset, $0100, 640 ; 40 tiles, 2bpp * 8x8 / 8 bits= 
     load_block_to_vram tiles_basic_set, $0280, 128 ; 8 tiles, 2bpp * 8x8 / 8 bits = 128
-    load_block_to_vram tiles_hangman, $0700, 256 ; 2 tiles, 4bpp * 16x16 / 8 bits = 256 bytes
+    load_block_to_vram tiles_hangman, $1000, 256 ; 2 tiles, 4bpp * 16x16 / 8 bits = 256 bytes
+    ; Unsafe zone is 0800-0ff0
 
 
     ; TODO: Loop VRAM until OBJ, BG CHR, BG SC Data has been transfered
@@ -235,10 +236,11 @@ oam_load_man:
     sta OAMDATA
     lda bSpritePosY ; OBJ V pos
     sta OAMDATA
-    lda #$70         ; Name - Face at location $E0 or $0E00
+
+    lda #$00         ; Name - Face at location $100
     sta OAMDATA
-    lda #%00110010  ; Highest priority / palette 1 
-    sta OAMDATA     ; HBFlip/Pri/ColorPalette/9name
+    lda #%00110011  ; Highest priority / palette 1 
+    sta OAMDATA     ; HVFlip/Pri/ColorPalette/9n
 
     ; Sprite Table 2 at OAM $0100
     lda #$00
