@@ -4,6 +4,7 @@
 .include "lorom128.inc"
 .include "register_clear.inc"
 .include "graphics.asm"
+.include "joycon.asm"
 .include "chars.asm"
 .include "tileswitch.asm"
 .include "basic_tile_level.asm"
@@ -123,8 +124,7 @@ VBlank:
     sta BG1HOFS
     stz BG1HOFS     ; Write the position to the BG
 
-    jsr joycon_read
-
+    joycon_read wJoyInput
 
     ; update the sprite (0000) position
     lda #$00
@@ -140,22 +140,6 @@ VBlank:
     endvblank: 
 rti 
 
-
-joycon_read:
-    lda HVBJOY   ; auto-read joypad status
-    and #$01    ; Check low bit to see if ready to be read.
-    bne end_joycon_read
-
-    rep #$30    ; A/X/Y - 16 bit
-
-    ; read joycon data (registers 4218h ~ 421Fh)
-    lda JOY1L    ; Controller 1 as 16 bit.
-    sta wJoyInput
-
-    sep #$20    ; Go back to A 8-bit
-
-    end_joycon_read:
-rts
 
 setup_video:
     ; Main register settings
