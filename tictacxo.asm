@@ -119,6 +119,7 @@ VBlank:
 
     ; Constant Screen Scrolling
     jsr scroll_the_screen_left
+
     ; Update the screen scroll register
     lda mBG1HOFS
     sta BG1HOFS
@@ -136,10 +137,8 @@ VBlank:
     lda bSpritePosY ; OBJ V pos
     sta OAMDATA
     
-
     endvblank: 
 rti 
-
 
 setup_video:
     ; Main register settings
@@ -240,7 +239,6 @@ oam_load_man:
     stz OAMDATA
 rts
 
-; The two should really set a mBG1HOFS mirror, then have that be applied in the vblank
 scroll_the_screen_left:
     lda mBG1HOFS
     ina
