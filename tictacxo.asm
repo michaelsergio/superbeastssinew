@@ -136,7 +136,17 @@ VBlank:
     sta OAMDATA
     lda bSpritePosY ; OBJ V pos
     sta OAMDATA
-    
+    ; Update the pants
+    lda #$02
+    sta OAMADDL     
+    lda #$00
+    sta OAMADDH     ; write to oam slot 0000
+    lda bSpritePosX ; OBJ H pos
+    sta OAMDATA
+    lda bSpritePosY ; OBJ V pos
+    inc
+    sta OAMDATA
+
     endvblank: 
 rti 
 
@@ -184,6 +194,7 @@ setup_video:
     ; TODO: Transfer OAM, CGRAM Data via DMA (2 channels)
     jsr reset_sprite_table
     jsr oam_load_man
+    jsr oam_load_man_pants
 
     ; Register initial screen settings
     jsr register_screen_settings
@@ -218,6 +229,37 @@ oam_load_man:
     lda #$00
     sta OAMADDL     
     lda #$01
+    sta OAMADDH     ; write to oam slot 256 ($100)
+    ; We want Obj 0 to be small and not use H MSB
+    stz OAMDATA
+    stz OAMDATA
+rts
+
+oam_load_man_pants:
+    lda #%00000000  ;sssnnbbb b=base_sel_bits n=name_selection s=size_from_table
+    sta OBSEL
+
+    ; Sprite Table 1 at OAM $02
+    lda #$02
+    sta OAMADDL     
+    lda #$00
+    sta OAMADDH     ; write to oam slot 0000
+
+    lda bSpritePosX ; OBJ H pos
+    sta OAMDATA
+    lda bSpritePosY ; OBJ V pos
+    inc
+    sta OAMDATA
+
+    lda #$01        ; Name - Pants at location $102
+    sta OAMDATA
+    lda #%00110011  ; Highest priority / palette 1 
+    sta OAMDATA     ; HVFlip/Pri/ColorPalette/9n
+
+    ; Sprite Table 2 at OAM $0100
+    lda #$00
+    sta OAMADDL     
+    lda #$0A
     sta OAMADDH     ; write to oam slot 256 ($100)
     ; We want Obj 0 to be small and not use H MSB
     stz OAMDATA
