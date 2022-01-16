@@ -46,8 +46,7 @@ Reset:
         ; TODO: Gen data of register to be renewed & mem to change BG & OBJ data
         ; aka Update
         ; react to input
-
-        jmp game_loop
+    jmp game_loop
 
 VBlank:
     ; Detect Beginning of VBlank (Appendix B-3)        
@@ -111,7 +110,7 @@ VBlank:
     sta OAMDATA
 
     endvblank: 
-        rti 
+rti 
 
 
 joycon_read:
@@ -128,28 +127,28 @@ joycon_read:
     sep #$20    ; Go back to A 8-bit
 
     end_joycon_read:
-    rts
+rts
 
 move_sprite_left:
     lda bSpritePosX
     dea
     sta bSpritePosX
-    rts
+rts
 move_sprite_right:
     lda bSpritePosX
     ina
     sta bSpritePosX
-    rts
+rts
 move_sprite_up:
     lda bSpritePosY
     dea
     sta bSpritePosY
-    rts
+rts
 move_sprite_down:
     lda bSpritePosY
     ina
     sta bSpritePosY
-    rts
+rts
 
 
 setup_video:
@@ -199,8 +198,7 @@ setup_video:
 
     ; Register initial screen settings
     jsr register_screen_settings
-
-    rts
+rts
 
 ; TODO WIP
 ; Zero the tile map in BG1
@@ -237,7 +235,7 @@ oam_load_man:
     lda bSpritePosY ; OBJ V pos
     sta OAMDATA
 
-    lda #$00         ; Name - Face at location $100
+    lda #$00        ; Name - Face at location $100
     sta OAMDATA
     lda #%00110011  ; Highest priority / palette 1 
     sta OAMDATA     ; HVFlip/Pri/ColorPalette/9n
@@ -250,9 +248,7 @@ oam_load_man:
     ; We want Obj 0 to be small and not use H MSB
     stz OAMDATA
     stz OAMDATA
-
-
-    rts
+rts
 
 ; The two should really set a mBG1HOFS mirror, then have that be applied in the vblank
 scroll_the_screen_left:
@@ -261,15 +257,14 @@ scroll_the_screen_left:
     sta bScrollBg1   ; increment and update the Scroll position
     sta BG1HOFS
     stz BG1HOFS     ; Write the position to the BG
-    rts
+rts
 scroll_the_screen_right:
     lda bScrollBg1
     dea
     sta bScrollBg1   ; increment and update the Scroll position
     sta BG1HOFS
     stz BG1HOFS     ; Write the position to the BG
-    rts
-
+rts
 
 load_bg_tiles:
     ;jsr load_simple_tiles
@@ -279,8 +274,7 @@ load_bg_tiles:
     ;load_chars_in_corner
     ;write_charset_with_autoinc
     ;print_hello_world
-
-    rts
+rts
 
 load_simple_tiles:
     ; Write 'A' to the top left corner
@@ -308,8 +302,7 @@ load_simple_tiles:
     sta VMDATAL
     lda #$C0 ; Flip V & H for fun (Turn A)
     sta VMDATAH
-
-    rts
+rts
 
 register_screen_settings:
     stz BGMODE  ; mode 0 8x8 4-color 4-bgs
@@ -328,7 +321,7 @@ register_screen_settings:
     lda #$FF    ; Scroll down 1 pixel (FF really 03FF 63) (add -1 in 2s complement)
     sta BG1VOFS
     sta BG1VOFS ; Set V offset Low, High, to FFFF for BG1
-    rts
+rts
 
 
 .segment "RODATA"

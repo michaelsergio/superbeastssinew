@@ -38,7 +38,7 @@ load_vram:
 
     plp
     plb
-    rts
+rts
 
 ; src_addr: 24 bit addr of src data
 ; start: color to start on in CG Ram
@@ -75,7 +75,7 @@ dma_palette:
 
     plp
     plb
-    rts
+rts
 
 ; Zeros all the sprites. 
 ; Sets all the sprites offscreen.
@@ -111,8 +111,7 @@ reset_sprite_table:
         sta OAMDATA
         dex
     bne @write_next_sprite_pos  ; do writes until 0
-
-    rts
+rts
 
 load_custom_palette:
     ; force a palette here
@@ -146,5 +145,4 @@ load_custom_palette:
     stz CGDATA
     stz CGDATA
     stz CGDATA
-
-    rts
+rts

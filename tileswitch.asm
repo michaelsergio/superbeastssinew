@@ -17,5 +17,4 @@ switch_tile:
     sta VMDATAL
     lda #$C0 ; Flip V & H for fun
     sta VMDATAH
-
-    rts
+rts
