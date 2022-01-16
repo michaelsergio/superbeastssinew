@@ -41,12 +41,11 @@ Reset:
     sta NMITIMEN
 
     game_loop:
-        jsr joy_update
-        wai ; Wait for NMI
-
         ; TODO: Gen data of register to be renewed & mem to change BG & OBJ data
         ; aka Update
         ; react to input
+        jsr joy_update
+        wai ; Wait for NMI
 jmp game_loop
 
 joy_update:
@@ -83,10 +82,30 @@ joy_update:
         bit #>KEY_RIGHT
         beq endjoycheck
         jsr move_sprite_right
-
     endjoycheck:
-
 rts
+
+move_sprite_left:
+    lda bSpritePosX
+    dea
+    sta bSpritePosX
+rts
+move_sprite_right:
+    lda bSpritePosX
+    ina
+    sta bSpritePosX
+rts
+move_sprite_up:
+    lda bSpritePosY
+    dea
+    sta bSpritePosY
+rts
+move_sprite_down:
+    lda bSpritePosY
+    ina
+    sta bSpritePosY
+rts
+
 
 VBlank:
     ; Detect Beginning of VBlank (Appendix B-3)        
@@ -136,27 +155,6 @@ joycon_read:
     sep #$20    ; Go back to A 8-bit
 
     end_joycon_read:
-rts
-
-move_sprite_left:
-    lda bSpritePosX
-    dea
-    sta bSpritePosX
-rts
-move_sprite_right:
-    lda bSpritePosX
-    ina
-    sta bSpritePosX
-rts
-move_sprite_up:
-    lda bSpritePosY
-    dea
-    sta bSpritePosY
-rts
-move_sprite_down:
-    lda bSpritePosY
-    ina
-    sta bSpritePosY
 rts
 
 setup_video:
