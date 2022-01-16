@@ -17,9 +17,9 @@ dpTmp3: .res 1, $00
 dpTmp4: .res 1, $00
 dpTmp5: .res 1, $00
 wJoyInput: .res 2, $0000
-bScrollBg1: .res 1, $00
 bSpritePosX: .res 1, $00
 bSpritePosY: .res 1, $00
+mBG1HOFS: .res 1, $00
 
 .code
 ; Follow set up in chapter 23 of manual
@@ -58,8 +58,7 @@ VBlank:
     ; TODO: change data settings for BG&OAM that renew picture
 
     ; Constant Screen Scrolling
-    ;jsr scroll_the_screen_left
-
+    jsr scroll_the_screen_left
     jsr joycon_read
 
 
@@ -108,6 +107,10 @@ VBlank:
     sta OAMDATA
     lda bSpritePosY ; OBJ V pos
     sta OAMDATA
+    
+    lda mBG1HOFS
+    sta BG1HOFS
+    stz BG1HOFS     ; Write the position to the BG
 
     endvblank: 
 rti 
@@ -252,18 +255,14 @@ rts
 
 ; The two should really set a mBG1HOFS mirror, then have that be applied in the vblank
 scroll_the_screen_left:
-    lda bScrollBg1
+    lda mBG1HOFS
     ina
-    sta bScrollBg1   ; increment and update the Scroll position
-    sta BG1HOFS
-    stz BG1HOFS     ; Write the position to the BG
+    sta mBG1HOFS   ; increment and update the Scroll position
 rts
 scroll_the_screen_right:
-    lda bScrollBg1
+    lda mBG1HOFS
     dea
-    sta bScrollBg1   ; increment and update the Scroll position
-    sta BG1HOFS
-    stz BG1HOFS     ; Write the position to the BG
+    sta mBG1HOFS   ; increment and update the Scroll position
 rts
 
 load_bg_tiles:
