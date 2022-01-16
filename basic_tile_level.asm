@@ -13,7 +13,7 @@ load_simple_tilemap_level_1:
 
     ; Set an index for the x
     ldx #$08
-    ldy #$0450      ; 04 for color palette 1, number 50 for basic tile set
+    ldy #$1050      ; 04 for color palette 1, number 50 for basic tile set
     @do_row:
         jsr fill_row_with_tiles
         jsr fill_row_with_tiles
