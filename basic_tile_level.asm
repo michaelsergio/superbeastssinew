@@ -1,5 +1,4 @@
 .code
-
 ; Assumes Tile Data is loaded at $500 or $50 in VRAM
 ; Loads 4 tiles per row
 load_simple_tilemap_level_1:

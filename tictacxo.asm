@@ -7,6 +7,8 @@
 .include "joycon.asm"
 .include "chars.asm"
 .include "tileswitch.asm"
+.include "pantsman.asm"
+.include "mercilak.asm"
 .include "basic_tile_level.asm"
 
 
@@ -18,8 +20,6 @@ dpTmp3: .res 1, $00
 dpTmp4: .res 1, $00
 dpTmp5: .res 1, $00
 wJoyInput: .res 2, $0000
-bSpritePosX: .res 1, $00
-bSpritePosY: .res 1, $00
 mBG1HOFS: .res 1, $00
 
 .code
@@ -158,7 +158,9 @@ setup_video:
     ; We're going to DMA the graphics instead of using 2121/2122
     load_palette test_font_a_palette, 0, 4
     load_palette palette_basic_set, $10, 4
-    load_palette palette_hangman, $90, $10
+    load_palette cave_palette, $14, 4
+    load_palette palette_hangman, $90, 16
+    load_palette palette_sprite_mercilak, $A0, 7
 
     ;custom_palette
     jsr load_custom_palette
@@ -181,9 +183,20 @@ setup_video:
     ;jsr reset_tiles
     ;load_block_to_vram test_font_a_obj, $0000, $0020 ; 2 tiles, 2bpp * 8x8 / 8bits = 32 bytes
     ;load_block_to_vram font_charset, $0100, 640 ; 40 tiles, 2bpp * 8x8 / 8 bits= 
+    load_tiles_basic_set:
     load_block_to_vram tiles_basic_set, $0280, 128 ; 8 tiles, 2bpp * 8x8 / 8 bits = 128
+    load_tiles_hangman:
     load_block_to_vram tiles_hangman, $1000, 256 ; 2 tiles, 4bpp * 16x16 / 8 bits = 256 bytes
-    ; Unsafe zone is 0800-0ff0
+    load_tiles_cave:
+    load_block_to_vram cave_tiles, $1100, (16 * 2 * 8 * 8 / 8) ; 16 tiles, 2bpp * 8x8 / 8 bits = 256 bytes
+    ; Unsafe zone is 0800-0ff0  (Word $0400~0748)
+    ; This takes up 2k of space ($400 bytes or 200 words)
+    ; This is where my Tilemap is located.
+    ; This is 32*28 8*8 chars or ~$400 bytes 
+    load_tiles_font_sloppy:
+    load_block_to_vram tiles_font_sloppy, $0A00, (64 * 2 * 8 * 8 / 8) ; 40 tiles, 2bpp * 8x8 / 8 bits= 
+    load_tile_mercilak:
+    load_block_to_vram tiles_sprite_mercilak, $0E00, (8 * 4 * 8 * 8 / 8) 
 
 
     ; TODO: Loop VRAM until OBJ, BG CHR, BG SC Data has been transfered
@@ -193,78 +206,24 @@ setup_video:
 
     ; TODO: Transfer OAM, CGRAM Data via DMA (2 channels)
     jsr reset_sprite_table
-    jsr oam_load_man
-    jsr oam_load_man_pants
+    jsr oam_load_man_with_pants
+    jsr moam_load_mercilak
+    jsr dma_sprite_mercilak
 
     ; Register initial screen settings
     jsr register_screen_settings
 rts
 
-oam_load_man:
-    ; Set an initial position for sprite
-    lda #$0F 
-    sta bSpritePosX
-    sta bSpritePosY
 
-    lda #%00000000  ;sssnnbbb b=base_sel_bits n=name_selection s=size_from_table
-    sta OBSEL
+load_cave_level:
+    ; We are going to load this level into a VRAM mirror
+    ; mTileMap
 
-    ; Sprite Table 1 at OAM $00
-    lda #$00
-    sta OAMADDL     
-    lda #$00
-    sta OAMADDH     ; write to oam slot 0000
-
-    lda bSpritePosX ; OBJ H pos
-    sta OAMDATA
-    lda bSpritePosY ; OBJ V pos
-    sta OAMDATA
-
-    lda #$00        ; Name - Face at location $100
-    sta OAMDATA
-    lda #%00110011  ; Highest priority / palette 1 
-    sta OAMDATA     ; HVFlip/Pri/ColorPalette/9n
-
-    ; Sprite Table 2 at OAM $0100
-    lda #$00
-    sta OAMADDL     
-    lda #$01
-    sta OAMADDH     ; write to oam slot 256 ($100)
-    ; We want Obj 0 to be small and not use H MSB
-    stz OAMDATA
-    stz OAMDATA
 rts
 
-oam_load_man_pants:
-    lda #%00000000  ;sssnnbbb b=base_sel_bits n=name_selection s=size_from_table
-    sta OBSEL
-
-    ; Sprite Table 1 at OAM $02
-    lda #$02
-    sta OAMADDL     
-    lda #$00
-    sta OAMADDH     ; write to oam slot 0000
-
-    lda bSpritePosX ; OBJ H pos
-    sta OAMDATA
-    lda bSpritePosY ; OBJ V pos
-    inc
-    sta OAMDATA
-
-    lda #$01        ; Name - Pants at location $102
-    sta OAMDATA
-    lda #%00110011  ; Highest priority / palette 1 
-    sta OAMDATA     ; HVFlip/Pri/ColorPalette/9n
-
-    ; Sprite Table 2 at OAM $0100
-    lda #$00
-    sta OAMADDL     
-    lda #$0A
-    sta OAMADDH     ; write to oam slot 256 ($100)
-    ; We want Obj 0 to be small and not use H MSB
-    stz OAMDATA
-    stz OAMDATA
-rts
+.macro load_size num_tile, bpp, tile_width 
+    (num_tile * bpp * tile_width * tile_width / 8)
+.endmacro
 
 scroll_the_screen_left:
     lda mBG1HOFS
@@ -357,6 +316,23 @@ tiles_basic_set:
 .incbin "imggen/basic_tileset.pic"
 palette_basic_set:
 .incbin "imggen/basic_tileset.clr"
+
+tiles_font_sloppy:
+.incbin "assets/fonts/font_sloppy.pic"
+
+tiles_sprite_mercilak:
+.incbin "assets/sprites/mercilak-test.pic"
+palette_sprite_mercilak:
+.incbin "assets/sprites/mercilak-test.clr"
+
+cave_tiles:
+.incbin "assets/cave/cave.pic"
+
+cave_palette:
+.incbin "assets/cave/cave.clr"
+
+cave_level_data:
+.include "assets/cave/level_cave_bg.asm"
 
 ObjFontA:
     .byte  $00, $00, $00, $00

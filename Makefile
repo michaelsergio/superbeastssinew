@@ -3,6 +3,7 @@ PCX2SNES:=pcx2snes/pcx2snes
 
 PROGRAM:=tictacxo
 SOURCES:=tictacxo.asm
+MORE_SOURCES:=$(wildcard *.asm)
 LD_CONFIGS:= lorom128.cfg
 BIN_DIR:=bin
 
@@ -27,8 +28,8 @@ all: build $(EXECUTABLE) debuglabels
 $(EXECUTABLE): $(OUTPUTS_BIN)
 	ld65 -Ln $(BIN_DIR)/$(PROGRAM).lbl -m $(BIN_DIR)/$(PROGRAM).map -C $(LD_CONFIGS) -o $@ $^
 
-$(BIN_DIR)/%.o: %.asm
-	ca65 -g $^ -o $@
+$(BIN_DIR)/%.o: $(SOURCES) $(MORE_SOURCES)
+	ca65 -g $< -o $@
 
 build: $(ASSETS_OUT) $(SPRITES_OUT)
 	@mkdir -p $(BIN_DIR)
