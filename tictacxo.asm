@@ -11,6 +11,7 @@
 .include "mercilak.asm"
 .include "basic_tile_level.asm"
 .include "level_load.asm"
+.include "textbox.asm"
 
 
 .zeropage
@@ -179,6 +180,9 @@ setup_video:
     ;custom_palette
     jsr load_custom_palette
 
+    ; force load on bg2
+    jsr load_textbox_palette
+
     ; force Black BG by setting first color in first palette to black
     force_black_bg:
         stz CGADD
@@ -293,40 +297,6 @@ load_simple_tiles:
 rts
 
 
-BG2_TILEMAP_VRAM_ADDR = $1800
-load_bg2_tilemap:
-
-    lda #V_INC_1
-    sta VMAIN        ; Single Inc
- 
-    ldx #BG2_TILEMAP_VRAM_ADDR + ($20 * 4) + $9 ; Jump 4 lines + space
-    stx VMADDL
-
-    ; Set the pri and pal
-    ldy #$2000
-    sty dpTmp0
-    ; loop over hello world
-    ldx #$0
-    @loop_until_null:
-        lda msg_itsyellow, x
-        beq @done
-        sta dpTmp0
-        ldy dpTmp0
-        sty  VMDATAL
-        inx
-    bra @loop_until_null
-    @done:
-rts
-
-line_feed:
-    ldx #$20
-    @line_feed_loop:
-        ldy #($2000 | $0000) ; 10 for color palette 0, tile 1 for solid
-        sty VMDATAL
-        dex
-    bne @line_feed_loop
-rts
-
 register_screen_settings:
     stz BGMODE  ; mode 0 8x8 4-color 4-bgs
 
@@ -392,6 +362,3 @@ cave_level_data:
 
 ObjFontA:
     .byte  $00, $00, $00, $00
-
-msg_helloworld: .asciiz "HELLO WORLD"
-msg_itsyellow: .asciiz "IT'S YELLOW...?"
