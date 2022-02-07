@@ -1,4 +1,4 @@
-; Generated from ../assets/cave.csv
+; Generated from cave.csv
 
 ; list of flips
 ; Each entry
@@ -23,7 +23,7 @@
 .byte $00, $03
 .byte $00, $03
 .byte $00, $08
-.byte $80, $08
+.byte $40, $08
 .byte $00, $03
 .byte $00, $03
 .byte $00, $03
@@ -56,7 +56,7 @@
 .byte $00, $03
 .byte $00, $03
 .byte $00, $0C
-.byte $80, $0C
+.byte $40, $0C
 .byte $00, $03
 .byte $00, $03
 .byte $00, $03
@@ -427,7 +427,7 @@
 .byte $00, $00
 .byte $00, $0D
 .byte $00, $0E
-.byte $80, $0D
+.byte $40, $0D
 .byte $00, $00
 .byte $00, $00
 .byte $00, $00
@@ -680,7 +680,7 @@
 .byte $00, $00
 .byte $00, $0D
 .byte $00, $0E
-.byte $80, $0D
+.byte $40, $0D
 .byte $00, $02
 .byte $00, $00
 .byte $00, $02

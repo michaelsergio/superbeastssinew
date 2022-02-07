@@ -10,6 +10,7 @@
 .include "pantsman.asm"
 .include "mercilak.asm"
 .include "basic_tile_level.asm"
+.include "level_load.asm"
 
 
 .zeropage
@@ -118,7 +119,7 @@ VBlank:
     ; TODO: change data settings for BG&OAM that renew picture
 
     ; Constant Screen Scrolling
-    jsr scroll_the_screen_left
+    ;jsr scroll_the_screen_left
 
     ; Update the screen scroll register
     lda mBG1HOFS
@@ -166,15 +167,19 @@ setup_video:
     jsr load_custom_palette
 
     ; force Black BG by setting first color in first palette to black
-    ; force_black_bg:
-    ;     stz CGADD
-    ;     stz CGDATA
-    ;     stz CGDATA
-    force_white_bg:
+    force_black_bg:
         stz CGADD
-        lda #$FF
-        sta CGDATA
-        sta CGDATA
+        stz CGDATA
+        stz CGDATA
+
+    ; force_white_bg:
+    ;     stz CGADD
+    ;     lda #$FF
+    ;     sta CGDATA
+    ;     sta CGDATA
+
+    ; Make sure hscroll is 0
+    stz mBG1HOFS
 
     ; Set VRAM Settings
     ; Transfer VRAM Data via DMA
@@ -201,8 +206,9 @@ setup_video:
 
     ; TODO: Loop VRAM until OBJ, BG CHR, BG SC Data has been transfered
 
-    ;jsr load_bg_tiles
+    jsr load_bg_tiles
     jsr load_simple_tilemap_level_1
+    jsr load_cave_level
 
     ; TODO: Transfer OAM, CGRAM Data via DMA (2 channels)
     jsr reset_sprite_table
@@ -214,11 +220,8 @@ setup_video:
     jsr register_screen_settings
 rts
 
-
 load_cave_level:
-    ; We are going to load this level into a VRAM mirror
-    ; mTileMap
-
+    tiled_load_level_as_bg cave_level_data, $0220, $5
 rts
 
 .macro load_size num_tile, bpp, tile_width 

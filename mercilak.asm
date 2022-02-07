@@ -31,7 +31,7 @@ dma_sprite_mercilak:
     lda #$04        ; B address for OAM 2104 
     sta BBADx + CH0
 
-    lda #^zpmOAMSpriteMercilak
+    lda #^zpmOAMSpriteMercilak  ; Bank address. Should I force 7E for this over ZP?
     ldx #zpmOAMSpriteMercilak
     sta A1Bx + CH0
     stx A1TxL + CH0

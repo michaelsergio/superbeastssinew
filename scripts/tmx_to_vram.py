@@ -2,7 +2,7 @@
 import sys
 
 def to_line(num, hflip, vflip):
-    status = (hflip << 7) | (vflip << 6)
+    status = (vflip << 7) | (hflip << 6)
     return ".byte ${:02X}, ${:02X}".format(status, num)
 
 file_structure_help = """
