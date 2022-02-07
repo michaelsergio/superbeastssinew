@@ -1,17 +1,34 @@
-MERCILAK_TILES = 6
-OAM_SIZE_BYTES = 4
-SIZE_OF_MERCILAK = MERCILAK_TILES * OAM_SIZE_BYTES
 
 MERCILAK_TILE_0 = $E2
 MERCILAK_INIT_X = $05
 MERCILAK_INIT_Y = $05
 
+; Must store things in little endian. Just like memory
+.struct OAMSprite
+    posX .byte
+    posY .byte
+    name .byte
+    status .byte
+.endstruct
+
+.struct SpriteMercilak
+    sub0 .tag OAMSprite
+    sub1 .tag OAMSprite
+    sub2 .tag OAMSprite
+    sub3 .tag OAMSprite
+    sub4 .tag OAMSprite
+    sub5 .tag OAMSprite
+.endstruct
+
+OAM_SIZE_BYTES = .sizeof(OAMSprite)
+
 .zeropage
 zpbMercilakPosX: .res 1, $00
 zpbMercilakPosY: .res 1, $00
-zpmOAMSpriteMercilak: .res SIZE_OF_MERCILAK, $00
+zpmOAMSpriteMercilak: .tag SpriteMercilak
 
 .code 
+
 
 ; DMA the OAM data for mercilak
 dma_sprite_mercilak: 
@@ -24,8 +41,6 @@ dma_sprite_mercilak:
     ; Following procedure in (2-17-3) using ch0
 
     lda #$00        ; DMA 1addr LH, CPU -> PPU autoinc
-    ;lda #$04        ; DMA 4addr LH, CPU -> PPU autoinc
-    ;lda #$01        ; DMA 2addr LH, CPU -> PPU autoinc
     sta DMAPx + CH0
 
     lda #$04        ; B address for OAM 2104 
@@ -36,13 +51,15 @@ dma_sprite_mercilak:
     sta A1Bx + CH0
     stx A1TxL + CH0
 
-    ldy #SIZE_OF_MERCILAK
+    ldy #.sizeof(SpriteMercilak)
     sty DASxL + CH0
 
     lda #$01 
     sta MDMAEN
+rts 
 
-    @merclilak_high_table:
+; This is used just for the offscreen and the SM/LG select.
+dma_sprite_mercilak_high_table: 
     ; Set high table spots of obj 8-13, 14&15 dont change
     lda #$01
     sta OAMADDL
@@ -50,46 +67,115 @@ dma_sprite_mercilak:
     sta OAMADDH
 
     stz OAMDATA     ; small nonnegative for Obj 8-11
-    lda #50         ; Low High order
+    lda #$50         ; Low High order
     sta OAMDATA     ; small nonnegnative for 12,13. 0 for 14,15
-rts 
+rts
+
+.macro mercilak_flip_subchar index
+    lda zpmOAMSpriteMercilak + index * OAM_SIZE_BYTES + OAMSprite::status
+    eor #$40
+    sta zpmOAMSpriteMercilak + index * OAM_SIZE_BYTES + OAMSprite::status
+.endmacro
+
+; Swaps tiles pos with next adjacent tile
+.macro mercilak_swap_subchar index_a, index_b
+    ; first two bytes in x, next two in y
+    ; Swap with a tmp buffer
+    ; Move spriteA.x -> tmp
+    ; lda zpmOAMSpriteMercilak + index_a * OAM_SIZE_BYTES + OAMSprite::posX
+    ; sta z:dpTmp0
+
+    ; ; Move sprite B.x -> sprite A.x
+    ; lda zpmOAMSpriteMercilak + index_b * OAM_SIZE_BYTES + OAMSprite::posX
+    ; sta zpmOAMSpriteMercilak + index_a * OAM_SIZE_BYTES + OAMSprite::posX
+
+    ; ; Move tmp -> sprite B
+    ; lda z:dpTmp0
+    ; sta zpmOAMSpriteMercilak + index_b * OAM_SIZE_BYTES + OAMSprite::posX
+
+    ; We also need to swap the whole status, name
+    ldx zpmOAMSpriteMercilak + index_a * OAM_SIZE_BYTES + OAMSprite::name
+    stx z:dpTmp0
+
+    ; Move sprite B.x -> sprite A.x
+    ldx zpmOAMSpriteMercilak + index_b * OAM_SIZE_BYTES + OAMSprite::name
+    stx zpmOAMSpriteMercilak + index_a * OAM_SIZE_BYTES + OAMSprite::name
+
+    ; Move tmp -> sprite B
+    ldx z:dpTmp0
+    stx zpmOAMSpriteMercilak + index_b * OAM_SIZE_BYTES + OAMSprite::name
+.endmacro
+
+mercilak_flip_head:
+    mercilak_flip_subchar 0
+    mercilak_flip_subchar 1
+    mercilak_swap_subchar 0, 1
+rts
+
+mercilak_flip_v:
+    ; Need to flip all the vtiles in oam and then check the vflip flag
+    ; First flip all V's
+    mercilak_flip_subchar 0
+    mercilak_flip_subchar 1
+    mercilak_flip_subchar 2
+    mercilak_flip_subchar 3
+    mercilak_flip_subchar 4
+    mercilak_flip_subchar 5
+    mercilak_flip_subchar 6
+
+    ; TODO: Swap all the V tiles in mem
+    mercilak_swap_subchar 0, 1
+    mercilak_swap_subchar 2, 3
+    mercilak_swap_subchar 4, 5
+rts
 
 moam_load_mercilak:
     ; Set bytes 2 and 3 of each 6 tiles
-    ; Set high pri and palette byte and name to same everything
+    ; Set flip, high pri and palette byte and name to same everything
+    ; Sets the status and the name bit in one shot
     ldx #(%00110100 << 8 | MERCILAK_TILE_0)
-    stx zpmOAMSpriteMercilak + 0 * OAM_SIZE_BYTES + 2
+    stx zpmOAMSpriteMercilak + SpriteMercilak::sub0 + OAMSprite::name
     inx
-    stx zpmOAMSpriteMercilak + 1 * OAM_SIZE_BYTES + 2
+    stx zpmOAMSpriteMercilak + SpriteMercilak::sub1 + OAMSprite::name
     inx
-    stx zpmOAMSpriteMercilak + 2 * OAM_SIZE_BYTES + 2
+    stx zpmOAMSpriteMercilak + SpriteMercilak::sub2 + OAMSprite::name
     inx
-    stx zpmOAMSpriteMercilak + 3 * OAM_SIZE_BYTES + 2
+    stx zpmOAMSpriteMercilak + SpriteMercilak::sub3 + OAMSprite::name
     inx
-    stx zpmOAMSpriteMercilak + 4 * OAM_SIZE_BYTES + 2
+    stx zpmOAMSpriteMercilak + SpriteMercilak::sub4 + OAMSprite::name
     inx
-    stx zpmOAMSpriteMercilak + 5 * OAM_SIZE_BYTES + 2
+    stx zpmOAMSpriteMercilak + SpriteMercilak::sub5 + OAMSprite::name
 
+    ; Set initial pos
+    lda #MERCILAK_INIT_X
+    sta zpbMercilakPosX
+    lda #MERCILAK_INIT_Y
+    sta zpbMercilakPosY
 
+    jsr update_mercilak_pos
+rts
+
+update_mercilak_pos:
     ; Set bytes 0 of each 6 tile VPOS
-    lda #(MERCILAK_INIT_Y + 0)
-    sta zpmOAMSpriteMercilak + 0 * OAM_SIZE_BYTES + 1
-    sta zpmOAMSpriteMercilak + 1 * OAM_SIZE_BYTES + 1
-    lda #(MERCILAK_INIT_Y + 8)
-    sta zpmOAMSpriteMercilak + 2 * OAM_SIZE_BYTES + 1
-    sta zpmOAMSpriteMercilak + 3 * OAM_SIZE_BYTES + 1
-    lda #(MERCILAK_INIT_Y + 16)
-    sta zpmOAMSpriteMercilak + 4 * OAM_SIZE_BYTES + 1
-    sta zpmOAMSpriteMercilak + 5 * OAM_SIZE_BYTES + 1
+    lda #(zpbMercilakPosY + 0)
+    sta zpmOAMSpriteMercilak + SpriteMercilak::sub0 + OAMSprite::posY
+    sta zpmOAMSpriteMercilak + SpriteMercilak::sub1 + OAMSprite::posY
+    lda #(zpbMercilakPosY + 8)
+    sta zpmOAMSpriteMercilak + SpriteMercilak::sub2 + OAMSprite::posY
+    sta zpmOAMSpriteMercilak + SpriteMercilak::sub3 + OAMSprite::posY
+    lda #(zpbMercilakPosY + 16)
+    sta zpmOAMSpriteMercilak + SpriteMercilak::sub4 + OAMSprite::posY
+    sta zpmOAMSpriteMercilak + SpriteMercilak::sub5 + OAMSprite::posY
 
     ; Set bytes 1 of each 6 tile HPOS
-    lda #(MERCILAK_INIT_X + 0)
-    sta zpmOAMSpriteMercilak + 0 * OAM_SIZE_BYTES + 0
-    sta zpmOAMSpriteMercilak + 2 * OAM_SIZE_BYTES + 0
-    sta zpmOAMSpriteMercilak + 4 * OAM_SIZE_BYTES + 0
-    lda #(MERCILAK_INIT_X + 8)
-    sta zpmOAMSpriteMercilak + 1 * OAM_SIZE_BYTES + 0
-    sta zpmOAMSpriteMercilak + 3 * OAM_SIZE_BYTES + 0
-    sta zpmOAMSpriteMercilak + 5 * OAM_SIZE_BYTES + 0
+    lda #(zpbMercilakPosX + 0)
+    sta zpmOAMSpriteMercilak + SpriteMercilak::sub0 + OAMSprite::posX
+    sta zpmOAMSpriteMercilak + SpriteMercilak::sub2 + OAMSprite::posX
+    sta zpmOAMSpriteMercilak + SpriteMercilak::sub4 + OAMSprite::posX
+    lda #(zpbMercilakPosX + 8)
+    sta zpmOAMSpriteMercilak + SpriteMercilak::sub1 + OAMSprite::posX
+    sta zpmOAMSpriteMercilak + SpriteMercilak::sub3 + OAMSprite::posX
+    sta zpmOAMSpriteMercilak + SpriteMercilak::sub5 + OAMSprite::posX
+
 rts
 

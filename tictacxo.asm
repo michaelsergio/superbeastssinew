@@ -51,6 +51,11 @@ Reset:
 jmp game_loop
 
 joy_update:
+    check_x:
+        lda wJoyInput
+        bit #<KEY_X
+        beq check_L
+        jsr mercilak_flip_v
     ; This has L and R
     check_L:
         lda wJoyInput
@@ -148,6 +153,8 @@ VBlank:
     inc
     sta OAMDATA
 
+    jsr dma_sprite_mercilak
+
     endvblank: 
 rti 
 
@@ -215,6 +222,7 @@ setup_video:
     jsr oam_load_man_with_pants
     jsr moam_load_mercilak
     jsr dma_sprite_mercilak
+    jsr dma_sprite_mercilak_high_table
 
     ; Register initial screen settings
     jsr register_screen_settings
@@ -309,11 +317,6 @@ font_charset:
 
 test_font_a_palette:
 .incbin "imggen/a.clr"
-
-tiles_hangman:
-.incbin "spritesgen/hangman.pic"
-palette_hangman:
-.incbin "spritesgen/hangman.clr"
 
 tiles_basic_set:
 .incbin "imggen/basic_tileset.pic"

@@ -73,3 +73,10 @@ oam_load_man_pants:
     stz OAMDATA
     stz OAMDATA
 rts
+
+
+.segment "RODATA"
+tiles_hangman:
+.incbin "spritesgen/hangman.pic"
+palette_hangman:
+.incbin "spritesgen/hangman.clr"
