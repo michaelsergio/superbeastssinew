@@ -79,25 +79,12 @@ rts
 
 ; Swaps tiles pos with next adjacent tile
 .macro mercilak_swap_subchar index_a, index_b
-    ; first two bytes in x, next two in y
-    ; Swap with a tmp buffer
-    ; Move spriteA.x -> tmp
-    ; lda zpmOAMSpriteMercilak + index_a * OAM_SIZE_BYTES + OAMSprite::posX
-    ; sta z:dpTmp0
-
-    ; ; Move sprite B.x -> sprite A.x
-    ; lda zpmOAMSpriteMercilak + index_b * OAM_SIZE_BYTES + OAMSprite::posX
-    ; sta zpmOAMSpriteMercilak + index_a * OAM_SIZE_BYTES + OAMSprite::posX
-
-    ; ; Move tmp -> sprite B
-    ; lda z:dpTmp0
-    ; sta zpmOAMSpriteMercilak + index_b * OAM_SIZE_BYTES + OAMSprite::posX
-
-    ; We also need to swap the whole status, name
+    ; We need to swap the whole status, name
+    ; Move sprite A -> tmp
     ldx zpmOAMSpriteMercilak + index_a * OAM_SIZE_BYTES + OAMSprite::name
     stx z:dpTmp0
 
-    ; Move sprite B.x -> sprite A.x
+    ; Move sprite B -> sprite A
     ldx zpmOAMSpriteMercilak + index_b * OAM_SIZE_BYTES + OAMSprite::name
     stx zpmOAMSpriteMercilak + index_a * OAM_SIZE_BYTES + OAMSprite::name
 
@@ -114,7 +101,7 @@ rts
 
 mercilak_flip_v:
     ; Need to flip all the vtiles in oam and then check the vflip flag
-    ; First flip all V's
+    ; First flip all H's
     mercilak_flip_subchar 0
     mercilak_flip_subchar 1
     mercilak_flip_subchar 2
@@ -123,7 +110,7 @@ mercilak_flip_v:
     mercilak_flip_subchar 5
     mercilak_flip_subchar 6
 
-    ; TODO: Swap all the V tiles in mem
+    ; Then swap the position
     mercilak_swap_subchar 0, 1
     mercilak_swap_subchar 2, 3
     mercilak_swap_subchar 4, 5
