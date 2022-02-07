@@ -1,4 +1,4 @@
-.define ROM_NAME "TICTACXO"
+.define ROM_NAME "SUPER BEASTS SINEW"
 
 .include "snes_registers.asm"
 .include "lorom128.inc"
@@ -164,11 +164,17 @@ setup_video:
 
     ; Set OAM, CGRAM Settings
     ; We're going to DMA the graphics instead of using 2121/2122
+    ; These are Mode 0 palettes
+    ; BG1 Starts at $00
     load_palette test_font_a_palette, 0, 4
     load_palette palette_basic_set, $10, 4
     load_palette cave_palette, $14, 4
+    ; Palettes for OBJ start at $80
     load_palette palette_hangman, $90, 16
     load_palette palette_sprite_mercilak, $A0, 7
+
+    ; Color palettes for BG2 start at $20. 
+    load_palette palette_basic_set, $20, 4
 
     ;custom_palette
     jsr load_custom_palette
@@ -210,12 +216,20 @@ setup_video:
     load_tile_mercilak:
     load_block_to_vram tiles_sprite_mercilak, $0E00, (8 * 4 * 8 * 8 / 8) 
 
+    ; BG2 blocks
+    BG2_VRAM_TILE_START = $2000
+    load_block_to_vram tiles_basic_set, BG2_VRAM_TILE_START, (8*2*8) ; num * bpp * size
+    ; Load font starting at space $20
+    load_block_to_vram tiles_font_sloppy, BG2_VRAM_TILE_START + $0100, (64*2*8) ; num * bpp * size
+
 
     ; TODO: Loop VRAM until OBJ, BG CHR, BG SC Data has been transfered
 
-    jsr load_bg_tiles
+    ;jsr load_bg_tiles
     jsr load_simple_tilemap_level_1
     jsr load_cave_level
+
+    jsr load_bg2_tilemap
 
     ; TODO: Transfer OAM, CGRAM Data via DMA (2 channels)
     jsr reset_sprite_table
@@ -269,20 +283,48 @@ load_simple_tiles:
     stx VMADDL
     lda #$01    
     sta VMDATAL
-    ; This is weird to me because we only write to the local block but
-    ; we are supposed to increment when writing to the high block (2119)
-    ; according to the 80 passed in to 2115s
-    ; Update: Ahh but the DMA Transfer type (4300) is 2 regs 001, so DMA 
-    ;         alternates between writing 2118 and 2119. This happened
-    ;         in the load_block_to_vram (load_vram) macro.
-
     ; Expirement second tile
-    ldx #$0401 ; to vram address 0401
+    ldx #$1801 ; to vram address 0401
     stx VMAIN
     lda #$01    
     sta VMDATAL
     lda #$C0 ; Flip V & H for fun (Turn A)
     sta VMDATAH
+rts
+
+
+BG2_TILEMAP_VRAM_ADDR = $1800
+load_bg2_tilemap:
+
+    lda #V_INC_1
+    sta VMAIN        ; Single Inc
+ 
+    ldx #BG2_TILEMAP_VRAM_ADDR + ($20 * 4) + $9 ; Jump 4 lines + space
+    stx VMADDL
+
+    ; Set the pri and pal
+    ldy #$2000
+    sty dpTmp0
+    ; loop over hello world
+    ldx #$0
+    @loop_until_null:
+        lda msg_itsyellow, x
+        beq @done
+        sta dpTmp0
+        ldy dpTmp0
+        sty  VMDATAL
+        inx
+    bra @loop_until_null
+    @done:
+rts
+
+line_feed:
+    ldx #$20
+    @line_feed_loop:
+        ldy #($2000 | $0000) ; 10 for color palette 0, tile 1 for solid
+        sty VMDATAL
+        dex
+    bne @line_feed_loop
 rts
 
 register_screen_settings:
@@ -291,10 +333,15 @@ register_screen_settings:
     lda #$04    ; Tile Map Location - set BG1 tile offset to $0400 (Word addr) (0800 in vram) with sc_size=00
     sta BG1SC   ; BG1SC 
 
-    lda #$00
-    sta BG12NBA ; BG1 name base address to $0000 (word addr) (Tiles offset)
+    lda #$18    ; Tile Map Location - set BG3 tile offset to $1800 (Word addr) (3000 in vram) with sc_size=00
+    sta BG2SC   ; BG1SC 
 
-    lda #(BG1_ON | SPR_ON) ; Enable BG1 and Sprites as main screen.
+    lda #$20
+    sta BG12NBA ; BG1 name base address to $0000 (word addr) (Tiles offset)
+    lda #$00
+    sta BG34NBA ; BG3 name base address to $0000 (word addr) (Tiles offset)
+
+    lda #(BG1_ON | BG2_ON | SPR_ON) ; Enable BG1 and Sprites as main screen.
     ;lda #BG1_ON ; Enable BG1 on The Main screen
     ;lda #SPR_ON ; Enable Sprites on The Main screen.
     sta TM
@@ -302,6 +349,9 @@ register_screen_settings:
     lda #$FF    ; Scroll down 1 pixel (FF really 03FF 63) (add -1 in 2s complement)
     sta BG1VOFS
     sta BG1VOFS ; Set V offset Low, High, to FFFF for BG1
+    lda #$FF    ; Scroll down 1 pixel (FF really 03FF 63) (add -1 in 2s complement)
+    sta BG2VOFS
+    sta BG2VOFS ; Set V offset Low, High, to FFFF for BG1
 rts
 
 
@@ -342,3 +392,6 @@ cave_level_data:
 
 ObjFontA:
     .byte  $00, $00, $00, $00
+
+msg_helloworld: .asciiz "HELLO WORLD"
+msg_itsyellow: .asciiz "IT'S YELLOW...?"

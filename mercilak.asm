@@ -1,7 +1,7 @@
 
 MERCILAK_TILE_0 = $E2
-MERCILAK_INIT_X = $05
-MERCILAK_INIT_Y = $05
+MERCILAK_INIT_X = $15
+MERCILAK_INIT_Y = $15
 
 ; Must store things in little endian. Just like memory
 .struct OAMSprite

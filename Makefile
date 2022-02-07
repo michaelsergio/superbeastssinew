@@ -1,7 +1,7 @@
 TOOLS:=~/code/snes/tools
 PCX2SNES:=pcx2snes/pcx2snes
 
-PROGRAM:=tictacxo
+PROGRAM:=super-beasts-sinew
 SOURCES:=tictacxo.asm
 MORE_SOURCES:=$(wildcard *.asm)
 LD_CONFIGS:= lorom128.cfg
