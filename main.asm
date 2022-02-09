@@ -94,24 +94,31 @@ joy_update:
     endjoycheck:
 rts
 
+MOVE_SPEED_X = $2
+MOVE_SPEED_Y = $2
+
 move_sprite_left:
     lda bSpritePosX
-    dea
+    sec
+    sbc #MOVE_SPEED_X
     sta bSpritePosX
 rts
 move_sprite_right:
     lda bSpritePosX
-    ina
+    clc
+    adc #MOVE_SPEED_X
     sta bSpritePosX
 rts
 move_sprite_up:
     lda bSpritePosY
-    dea
+    sec
+    sbc #MOVE_SPEED_Y
     sta bSpritePosY
 rts
 move_sprite_down:
     lda bSpritePosY
-    ina
+    clc
+    adc #MOVE_SPEED_Y
     sta bSpritePosY
 rts
 
@@ -145,10 +152,12 @@ set_pantsman_pos_to_mercilak:
     ; Transfer pants man position to mercilak
     lda bSpritePosX
     clc
-    adc #$8
+    adc #$8 ; offset a little
     sta zpbMercilakPosX
+
     lda bSpritePosY
     sta zpbMercilakPosY
+
     jsr update_mercilak_pos
 rts
 
