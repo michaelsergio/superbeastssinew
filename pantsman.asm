@@ -30,7 +30,7 @@ oam_load_man:
 
     lda #$00        ; Name - Face at location $100
     sta OAMDATA
-    lda #%00110011  ; Highest priority / palette 1 
+    lda #%00100011  ; priority=2 / palette 1 
     sta OAMDATA     ; HVFlip/Pri/ColorPalette/9n
 
     ; Sprite Table 2 at OAM $0100
@@ -61,7 +61,7 @@ oam_load_man_pants:
 
     lda #$01        ; Name - Pants at location $102
     sta OAMDATA
-    lda #%00110011  ; Highest priority / palette 1 
+    lda #%00100011  ; Highest priority / palette 1 
     sta OAMDATA     ; HVFlip/Pri/ColorPalette/9n
 
     ; Sprite Table 2 at OAM $0100 (OAM 256) has sprites data for OBJ 0-7

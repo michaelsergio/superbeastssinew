@@ -48,6 +48,7 @@ Reset:
         ; aka Update
         ; react to input
         jsr joy_update
+        jsr set_pantsman_pos_to_mercilak
         wai ; Wait for NMI
 jmp game_loop
 
@@ -134,6 +135,26 @@ VBlank:
 
     joycon_read wJoyInput
 
+    jsr update_man_pos
+    jsr dma_sprite_mercilak
+
+    endvblank: 
+rti 
+
+set_pantsman_pos_to_mercilak:
+    ; Transfer pants man position to mercilak
+    lda bSpritePosX
+    clc
+    adc #$8
+    sta zpbMercilakPosX
+    lda bSpritePosY
+    sta zpbMercilakPosY
+    jsr update_mercilak_pos
+rts
+
+; This updates man pos directly instead of vRAM mirror
+; This is bad
+update_man_pos:
     ; update the sprite (0000) position
     lda #$00
     sta OAMADDL     
@@ -153,11 +174,7 @@ VBlank:
     lda bSpritePosY ; OBJ V pos
     inc
     sta OAMDATA
-
-    jsr dma_sprite_mercilak
-
-    endvblank: 
-rti 
+rts
 
 setup_video:
     ; Main register settings

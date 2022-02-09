@@ -1,6 +1,6 @@
 
 MERCILAK_TILE_0 = $E2
-MERCILAK_INIT_X = $15
+MERCILAK_INIT_X = $01
 MERCILAK_INIT_Y = $15
 
 ; Must store things in little endian. Just like memory
@@ -120,7 +120,7 @@ moam_load_mercilak:
     ; Set bytes 2 and 3 of each 6 tiles
     ; Set flip, high pri and palette byte and name to same everything
     ; Sets the status and the name bit in one shot
-    ldx #(%00110100 << 8 | MERCILAK_TILE_0)
+    ldx #(%00100100 << 8 | MERCILAK_TILE_0)
     stx zpmOAMSpriteMercilak + SpriteMercilak::sub0 + OAMSprite::name
     inx
     stx zpmOAMSpriteMercilak + SpriteMercilak::sub1 + OAMSprite::name
@@ -144,22 +144,25 @@ rts
 
 update_mercilak_pos:
     ; Set bytes 0 of each 6 tile VPOS
-    lda #(zpbMercilakPosY + 0)
+    lda zpbMercilakPosY
     sta zpmOAMSpriteMercilak + SpriteMercilak::sub0 + OAMSprite::posY
     sta zpmOAMSpriteMercilak + SpriteMercilak::sub1 + OAMSprite::posY
-    lda #(zpbMercilakPosY + 8)
+    clc
+    adc #$8
     sta zpmOAMSpriteMercilak + SpriteMercilak::sub2 + OAMSprite::posY
     sta zpmOAMSpriteMercilak + SpriteMercilak::sub3 + OAMSprite::posY
-    lda #(zpbMercilakPosY + 16)
+    clc
+    adc #$8
     sta zpmOAMSpriteMercilak + SpriteMercilak::sub4 + OAMSprite::posY
     sta zpmOAMSpriteMercilak + SpriteMercilak::sub5 + OAMSprite::posY
 
     ; Set bytes 1 of each 6 tile HPOS
-    lda #(zpbMercilakPosX + 0)
+    lda zpbMercilakPosX
     sta zpmOAMSpriteMercilak + SpriteMercilak::sub0 + OAMSprite::posX
     sta zpmOAMSpriteMercilak + SpriteMercilak::sub2 + OAMSprite::posX
     sta zpmOAMSpriteMercilak + SpriteMercilak::sub4 + OAMSprite::posX
-    lda #(zpbMercilakPosX + 8)
+    clc
+    adc #$8
     sta zpmOAMSpriteMercilak + SpriteMercilak::sub1 + OAMSprite::posX
     sta zpmOAMSpriteMercilak + SpriteMercilak::sub3 + OAMSprite::posX
     sta zpmOAMSpriteMercilak + SpriteMercilak::sub5 + OAMSprite::posX
