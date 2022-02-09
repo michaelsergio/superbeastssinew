@@ -33,7 +33,7 @@ load_vram:
     lda #$18            ; DMA destination register 2118 (VRAM data write)
     sta CH0 + BBADx
 
-    lda $01     ; DMA channel 0
+    lda #$01     ; DMA channel 0
     sta MDMAEN  ; Initiate transfer
 
     plp
