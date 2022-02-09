@@ -53,21 +53,21 @@ load_bg2_tilemap:
     lda #V_INC_1
     sta VMAIN        ; Single Inc
  
-    ldx #BG2_TILEMAP_VRAM_ADDR + ($20 * 3) + $9 ; Jump 4 lines + space
+    ldx #BG2_TILEMAP_VRAM_ADDR + ($20 * 3) + $8 ; Jump 4 lines + space
     stx VMADDL
     write_single_line msg_blank_line
-    ldx #BG2_TILEMAP_VRAM_ADDR + ($20 * 4) + $9 ; Jump 4 lines + space
+    ldx #BG2_TILEMAP_VRAM_ADDR + ($20 * 4) + $8 ; Jump 4 lines + space
     stx VMADDL
     write_single_line msg_blank_line
 
-    ldx #BG2_TILEMAP_VRAM_ADDR + ($20 * 5) + $9 ; Jump 4 lines + space
+    ldx #BG2_TILEMAP_VRAM_ADDR + ($20 * 5) + $8 ; Jump 4 lines + space
     stx VMADDL
     write_single_line msg_its_yellow
 
-    ldx #BG2_TILEMAP_VRAM_ADDR + ($20 * 6) + $9 ; Jump 4 lines + space
+    ldx #BG2_TILEMAP_VRAM_ADDR + ($20 * 6) + $8 ; Jump 4 lines + space
     stx VMADDL
     write_single_line msg_blank_line
-    ldx #BG2_TILEMAP_VRAM_ADDR + ($20 * 7) + $9 ; Jump 4 lines + space
+    ldx #BG2_TILEMAP_VRAM_ADDR + ($20 * 7) + $8 ; Jump 4 lines + space
     stx VMADDL
     write_single_line msg_blank_line
 rts
