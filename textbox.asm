@@ -83,5 +83,5 @@ line_feed:
 rts
 
 .segment "RODATA"
-msg_blank_line: .asciiz "                 "
-msg_its_yellow: .asciiz " IT'S YELLOW...? "
+msg_blank_line: .asciiz "                     "
+msg_its_yellow: .asciiz "   IT'S YELLOW...?   "
