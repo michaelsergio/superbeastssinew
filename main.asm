@@ -33,6 +33,13 @@ Reset:
     ; Move to force blank and clear all the registers
     register_clear
 
+    ; Initialize zeropage
+    ldx #$FF
+    zero_dp:
+    stz $00,x
+    dex
+    bne zero_dp
+
     jsr setup_video
 
     ; Release VBlank

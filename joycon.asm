@@ -1,7 +1,12 @@
 .macro joycon_read wJoyVar
+    joycon_read_in_progress:
     lda HVBJOY   ; auto-read joypad status
     and #$01    ; Check low bit to see if ready to be read.
-    bne end_joycon_read
+    
+    ; wait for 0 to ready to read data
+    bne joycon_read_in_progress
+
+    joycon_ready_to_read:
 
     rep #$30    ; A/X/Y - 16 bit
 

@@ -1,5 +1,5 @@
 TOOLS:=~/code/snes/tools
-PCX2SNES:=pcx2snes/pcx2snes
+PCX2SNES:=pcx2snes/pcx2snes.exe
 
 PROGRAM:=super-beasts-sinew
 SOURCES:=main.asm
