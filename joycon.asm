@@ -7,14 +7,7 @@
     bne joycon_read_in_progress
 
     joycon_ready_to_read:
-
-    rep #$30    ; A/X/Y - 16 bit
-
     ; read joycon data (registers 4218h ~ 421Fh)
-    lda JOY1L    ; Controller 1 as 16 bit.
-    sta wJoyVar
-
-    sep #$20    ; Go back to A 8-bit
-
-    end_joycon_read:
+    ldx JOY1L    ; Controller 1 as 16 bit.
+    stx wJoyVar
 .endmacro
